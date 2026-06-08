@@ -1,0 +1,18 @@
+# Render.com 一键部署配置
+# 访问 https://render.com  →  New  →  Blueprint  →  连接此仓库
+
+services:
+  - type: web
+    name: gasoff
+    env: python
+    buildCommand: pip install -r backend/requirements.txt gunicorn
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 --access-logfile - --error-logfile - backend.main:app
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: TELEGRAM_WEBHOOK_URL
+        value: https://gasoff.onrender.com
+      - key: ALLOWED_ORIGINS
+        value: https://gasoff.onrender.com

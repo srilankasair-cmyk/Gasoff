@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  gasoff:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - backend/.env
+    environment:
+      - TELEGRAM_WEBHOOK_URL=https://YOUR_DOMAIN.com
+    restart: unless-stopped
