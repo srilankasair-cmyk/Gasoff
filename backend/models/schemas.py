@@ -18,12 +18,45 @@ class TelegramChat(BaseModel):
     username: Optional[str] = None
 
 
+class SuccessfulPayment(BaseModel):
+    currency: str
+    total_amount: int
+    invoice_payload: str
+    telegram_payment_charge_id: str
+    provider_payment_charge_id: str
+
+
 class TelegramMessage(BaseModel):
     message_id: int
     from_user: Optional[TelegramUser] = Field(None, alias="from")
     chat: TelegramChat
     text: Optional[str] = None
     date: int
+    forward_from: Optional[TelegramUser] = None
+    forward_sender_name: Optional[str] = None
+    successful_payment: Optional[SuccessfulPayment] = None
+
+    class Config:
+        populate_by_name = True
+
+
+class PreCheckoutQuery(BaseModel):
+    id: str
+    from_user: TelegramUser = Field(alias="from")
+    currency: str
+    total_amount: int
+    invoice_payload: str
+
+    class Config:
+        populate_by_name = True
+
+
+
+class CallbackQuery(BaseModel):
+    id: str
+    from_user: TelegramUser = Field(alias="from")
+    data: Optional[str] = None
+    message: Optional[TelegramMessage] = None
 
     class Config:
         populate_by_name = True
@@ -32,6 +65,8 @@ class TelegramMessage(BaseModel):
 class TelegramUpdate(BaseModel):
     update_id: int
     message: Optional[TelegramMessage] = None
+    callback_query: Optional[CallbackQuery] = None
+    pre_checkout_query: Optional[PreCheckoutQuery] = None
 
 
 class DeidentifiedSegment(BaseModel):
@@ -50,6 +85,11 @@ class GottmanScores(BaseModel):
     contempt: float = Field(..., ge=0, le=100)
     defensiveness: float = Field(..., ge=0, le=100)
     stonewalling: float = Field(..., ge=0, le=100)
+
+
+class GottmanData(BaseModel):
+    user: GottmanScores
+    other: GottmanScores
 
 
 class CircumplexAxis(BaseModel):
@@ -79,7 +119,9 @@ class ToxicSentence(BaseModel):
 class AnalysisResult(BaseModel):
     other_name: str
     toxicity_score: float
-    gottman: GottmanScores
+    toxicity_direction: str = "other_to_self"
+    toxicity_explanation: str = ""
+    gottman: GottmanData
     circumplex: CircumplexData
     toxic_sentences: list[ToxicSentence]
     summary: str

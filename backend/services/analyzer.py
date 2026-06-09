@@ -1,11 +1,12 @@
-"""DeepSeek LLM integration for relationship analysis."""
+"""DeepSeek LLM integration for relationship analysis.
+
+Uses synchronous requests for PythonAnywhere compatibility.
+"""
 
 import json
 import logging
-import uuid
-from typing import Optional
 
-import httpx
+import requests
 
 from backend.config.settings import settings
 from backend.models.schemas import (
@@ -13,45 +14,76 @@ from backend.models.schemas import (
     CircumplexAxis,
     CircumplexData,
     GottmanScores,
+    GottmanData,
     ToxicSentence,
 )
 
 logger = logging.getLogger(__name__)
 
-_ANALYSIS_SYSTEM_PROMPT = """You are "Gas-off", a world-class relationship psychologist AI. 
-Analyze the following de-identified chat conversation between two people (USER and OTHER).
-
-Return a JSON object with exactly these fields:
-{
-  "other_name": "display name for the other person (can be 'OTHER' if unknown)",
-  "toxicity_score": integer 0-100,
-  "gottman": {
-    "criticism": 0-100,
-    "contempt": 0-100,
-    "defensiveness": 0-100,
-    "stonewalling": 0-100
-  },
-  "circumplex": {
-    "user": { "dominance": -100 to 100, "arrogance": -100 to 100, "coldness": -100 to 100, "hostility": -100 to 100, "submission": -100 to 100, "humility": -100 to 100, "warmth": -100 to 100, "empathy": -100 to 100 },
-    "other": { "dominance": -100 to 100, "arrogance": -100 to 100, "coldness": -100 to 100, "hostility": -100 to 100, "submission": -100 to 100, "humility": -100 to 100, "warmth": -100 to 100, "empathy": -100 to 100 }
-  },
-  "toxic_sentences": [
-    {
-      "sentence": "the exact toxic sentence",
-      "label": "academic label e.g. '情感勒索 (Emotional Blackmail)'",
-      "explanation": "why this is toxic",
-      "original_speaker": "user or other",
-      "counter_suggestion": "防PUA回击话术"
-    }
-  ],
-  "summary": "brief overall analysis in Chinese, max 3 sentences"
-}
-
-Gottman scores are based on John Gottman's Four Horsemen theory.
-Circumplex axes follow the Interpersonal Circumplex model (dominant vs submissive, warm vs cold).
-For toxic sentences, use labels like: 情感勒索, 煤气灯效应, 贬低, 否定感受, 责任转嫁, 冷暴力威胁, 情绪绑架 etc.
-Counter-suggestions should be practical, empowering phrases the user can say back.
-"""
+_ANALYSIS_SYSTEM_PROMPT = (
+    'You are "Gas-off", a world-class relationship psychologist AI.\n'
+    "Analyze the following chat conversation between two people.\n"
+    "Messages are labelled as [You: NAME] (the person who forwarded this)\n"
+    "and [Other: NAME] (the other person in the conversation).\n"
+    "\n"
+    "There are TWO modes:\n"
+    "\n"
+    'Mode A — The user is in the conversation (messages labelled [You: ...] exist):\n'
+    '  - "other_name" = the other person\'s name\n'
+    '  - "toxicity_direction" = "other_to_self" if the other person hurts the user, '
+    '"self_to_other" if the user hurts the other\n'
+    '  - "toxicity_explanation" = 1-2 sentences in English explaining who is hurting whom\n'
+    '  - gottman_user = the user\'s own Four Horsemen scores\n'
+    '  - gottman_other = the other person\'s Four Horsemen scores\n'
+    '  - "original_speaker" = "user" or "other"\n'
+    "\n"
+    'Mode B — Both people are third parties (only [Other: ...] messages):\n'
+    '  - "other_name" = "Both parties"\n'
+    '  - "toxicity_direction" = "mutual"\n'
+    '  - "toxicity_explanation" = explanation of mutual toxicity in English\n'
+    '  - gottman_user = first person\'s scores, gottman_other = second person\'s scores\n'
+    '  - "original_speaker" = "Person_A" or "Person_B"\n'
+    "\n"
+    "Return a JSON object with exactly these fields:\n"
+    "{\n"
+    '  "other_name": "name",\n'
+    '  "toxicity_score": integer 0-100 (always positive),\n'
+    '  "toxicity_direction": "other_to_self" | "self_to_other" | "mutual",\n'
+    '  "toxicity_explanation": "English explanation of direction",\n'
+    '  "gottman_user": {\n'
+    '    "criticism": 0-100, "contempt": 0-100,\n'
+    '    "defensiveness": 0-100, "stonewalling": 0-100\n'
+    "  },\n"
+    '  "gottman_other": {\n'
+    '    "criticism": 0-100, "contempt": 0-100,\n'
+    '    "defensiveness": 0-100, "stonewalling": 0-100\n'
+    "  },\n"
+    '  "circumplex": {\n'
+    '    "user": { "dominance": -100_100, "arrogance": -100_100, '
+    '"coldness": -100_100, "hostility": -100_100,\n'
+    '      "submission": -100_100, "humility": -100_100, '
+    '"warmth": -100_100, "empathy": -100_100 },\n'
+    '    "other": { "dominance": -100_100, "arrogance": -100_100, '
+    '"coldness": -100_100, "hostility": -100_100,\n'
+    '      "submission": -100_100, "humility": -100_100, '
+    '"warmth": -100_100, "empathy": -100_100 }\n'
+    "  },\n"
+    '  "toxic_sentences": [{\n'
+    '    "sentence": "exact toxic sentence",\n'
+    '    "label": "English label e.g. Emotional Blackmail",\n'
+    '    "explanation": "why this is toxic in English",\n'
+    '    "original_speaker": "user | other | Person_A | Person_B",\n'
+    '    "counter_suggestion": "anti-PUA phrase in English"\n'
+    "  }],\n"
+    '  "summary": "brief analysis in English, max 3 sentences"\n'
+    "}\n"
+    "\n"
+    "Gottman scores follow John Gottman's Four Horsemen (Criticism, Contempt, Defensiveness, Stonewalling).\n"
+    "Circumplex follows the Interpersonal Circumplex model.\n"
+    "Use English labels for toxic sentences: Emotional Blackmail, Gaslighting, Belittling, "
+    "Denial, Blame Shifting, Silent Treatment, Emotional Coercion etc.\n"
+    "Counter-suggestions should be practical, empowering phrases in English. All output must be in English.\n"
+)
 
 
 class AnalysisError(Exception):
@@ -59,11 +91,10 @@ class AnalysisError(Exception):
 
 
 def _build_prompt(clean_text: str) -> str:
-    return f"Analyze this de-identified conversation:\n\n{clean_text}"
+    return f"Analyze this conversation:\n\n{clean_text}"
 
 
-async def analyze_conversation(clean_text: str) -> AnalysisResult:
-    """Send de-identified text to DeepSeek and parse the structured result."""
+def analyze_conversation(clean_text: str) -> AnalysisResult:
     if not settings.DEEPSEEK_API_KEY:
         logger.warning("No DEEPSEEK_API_KEY configured; returning mock result")
         return _mock_result()
@@ -79,42 +110,53 @@ async def analyze_conversation(clean_text: str) -> AnalysisResult:
     }
 
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(
-                settings.DEEPSEEK_API_URL,
-                headers={
-                    "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json=payload,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            content = data["choices"][0]["message"]["content"]
-            return _parse_result(json.loads(content))
-    except httpx.HTTPStatusError as e:
-        logger.error(f"DeepSeek API error: {e.response.status_code} {e.response.text}")
+        resp = requests.post(
+            settings.DEEPSEEK_API_URL,
+            headers={
+                "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=60,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        content = data["choices"][0]["message"]["content"]
+        return _parse_result(json.loads(content))
+    except requests.HTTPError as e:
+        logger.error(f"DeepSeek API error: {e.response.status_code}")
         raise AnalysisError(f"API error: {e.response.status_code}")
     except (KeyError, json.JSONDecodeError) as e:
         logger.error(f"Failed to parse DeepSeek response: {e}")
         raise AnalysisError("Invalid response format from LLM")
-    except (httpx.ConnectError, httpx.TimeoutException) as e:
+    except (requests.ConnectionError, requests.Timeout) as e:
         logger.error(f"Network error connecting to DeepSeek: {e}; falling back to mock")
         return _mock_result()
 
 
 def _parse_result(data: dict) -> AnalysisResult:
-    g = data["gottman"]
+    gu = data.get("gottman_user", data.get("gottman", {}))
+    go = data.get("gottman_other", data.get("gottman", {}))
     cu = data["circumplex"]["user"]
     co = data["circumplex"]["other"]
     return AnalysisResult(
-        other_name=data.get("other_name", "对方"),
+        other_name=data.get("other_name", "Other"),
         toxicity_score=data["toxicity_score"],
-        gottman=GottmanScores(
-            criticism=g["criticism"],
-            contempt=g["contempt"],
-            defensiveness=g["defensiveness"],
-            stonewalling=g["stonewalling"],
+        toxicity_direction=data.get("toxicity_direction", "other_to_self"),
+        toxicity_explanation=data.get("toxicity_explanation", ""),
+        gottman=GottmanData(
+            user=GottmanScores(
+                criticism=gu.get("criticism", 0),
+                contempt=gu.get("contempt", 0),
+                defensiveness=gu.get("defensiveness", 0),
+                stonewalling=gu.get("stonewalling", 0),
+            ),
+            other=GottmanScores(
+                criticism=go.get("criticism", 0),
+                contempt=go.get("contempt", 0),
+                defensiveness=go.get("defensiveness", 0),
+                stonewalling=go.get("stonewalling", 0),
+            ),
         ),
         circumplex=CircumplexData(
             user=CircumplexAxis(**cu),
@@ -130,8 +172,16 @@ def _mock_result() -> AnalysisResult:
     return AnalysisResult(
         other_name="TA",
         toxicity_score=72,
-        gottman=GottmanScores(
-            criticism=68, contempt=55, defensiveness=80, stonewalling=42
+        toxicity_direction="other_to_self",
+        toxicity_explanation="The other person uses frequent criticism and contempt, "
+                             "causing you emotional stress and putting you on the defensive.",
+        gottman=GottmanData(
+            user=GottmanScores(
+                criticism=15, contempt=5, defensiveness=60, stonewalling=20,
+            ),
+            other=GottmanScores(
+                criticism=68, contempt=55, defensiveness=30, stonewalling=42,
+            ),
         ),
         circumplex=CircumplexData(
             user=CircumplexAxis(
@@ -145,20 +195,20 @@ def _mock_result() -> AnalysisResult:
         ),
         toxic_sentences=[
             ToxicSentence(
-                sentence="我这都是为了你好",
-                label="情感勒索 (Emotional Blackmail)",
-                explanation="以'为你好'包装控制行为，让对方无法反驳。",
+                sentence="This is for your own good",
+                label="Emotional Blackmail",
+                explanation="Disguising control as care.",
                 original_speaker="other",
-                counter_suggestion="「我知道你是好意，但这种方式让我不舒服。我们换个方式沟通好吗？」",
+                counter_suggestion="I appreciate your concern, but this approach makes me uncomfortable.",
             ),
             ToxicSentence(
-                sentence="你太敏感了",
-                label="煤气灯效应 (Gaslighting)",
-                explanation="否定对方的感受，让对方怀疑自己的判断。",
+                sentence="You are too sensitive",
+                label="Gaslighting",
+                explanation="Denying the other person's feelings.",
                 original_speaker="other",
-                counter_suggestion="「我的感受是真实的，请你不要否定。我们可以谈谈具体发生了什么。」",
+                counter_suggestion="My feelings are valid. Let's talk about what actually happened.",
             ),
         ],
-        summary="这段对话中对方展现出明显的支配型沟通模式，存在情感勒索和煤气灯效应。"
-                "建议用户设立边界，必要时寻求专业心理咨询。",
+        summary="The other person shows a dominant communication pattern "
+                "with emotional blackmail and gaslighting.",
     )
