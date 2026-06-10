@@ -32,8 +32,11 @@
     .loader-text { margin-top: 12px; font-size: 13px; color: #1a1a1a; font-weight: 600; }
 
     /* ── Page Container ── */
-    .container { max-width: 420px; margin: 0 auto; padding: 24px 20px 24px; display: none; }
+    .container { max-width: 420px; margin: 0 auto; padding: 0 20px 24px; display: none; }
     .container.show { display: block; }
+
+    /* ── Top/Bottom spacers ── */
+    .top-spacer, .bottom-spacer { background: #f0efea; height: 24px; }
 
     /* ── Section Wrapper ── */
     .section {
@@ -57,7 +60,7 @@
     }
     .score-card .label {
       font-family: 'Inter', sans-serif;
-      font-size: 18px; font-weight: 800; line-height: 27px;
+      font-size: 20px; font-weight: 800; line-height: 27px;
       letter-spacing: -0.44px; color: #444444;
     }
     .score-row {
@@ -66,7 +69,7 @@
     }
     .score-number {
       font-family: 'Inter', sans-serif;
-      font-size: 81px; font-weight: 600; line-height: 1;
+      font-size: 90px; font-weight: 600; line-height: 1;
       letter-spacing: -3.3px; color: #1a1a1a;
     }
     .score-bar-wrap {
@@ -90,13 +93,13 @@
       padding: 3px 12px; border-radius: 99px;
       background: rgba(0,0,0,0.12);
       font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 600; line-height: 18px;
+      font-size: 13px; font-weight: 600; line-height: 18px;
       color: #2a2a1a;
       width: fit-content;
     }
     .score-explanation {
       font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 400; line-height: 20px;
+      font-size: 13px; font-weight: 400; line-height: 20px;
       letter-spacing: -0.08px; color: #2a2a1a;
     }
 
@@ -108,12 +111,12 @@
     }
     .section-title {
       font-family: 'Inter', sans-serif;
-      font-size: 18px; font-weight: 800; line-height: 27px;
+      font-size: 20px; font-weight: 800; line-height: 27px;
       letter-spacing: -0.44px; color: #ffffff;
     }
     .section-subtitle {
       font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 400; line-height: 20px;
+      font-size: 13px; font-weight: 400; line-height: 20px;
       letter-spacing: -0.08px; color: rgba(255,255,255,0.55);
     }
 
@@ -121,13 +124,15 @@
       background: rgba(0,0,0,0.15); border-radius: 20px;
       padding: 18px 20px;
       display: flex; flex-direction: column;
+      opacity: 0; transform: translateY(24px);
     }
+    .horsemen-item.anim-slide { animation: slideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
     .horsemen-item .name-row {
       display: flex; justify-content: space-between; align-items: center;
     }
     .horsemen-item .name {
       font-family: 'Inter', sans-serif;
-      font-size: 15px; font-weight: 800; line-height: 22px;
+      font-size: 16px; font-weight: 800; line-height: 22px;
       letter-spacing: -0.23px; color: #ffffff;
     }
     .horsemen-item .bars-section {
@@ -156,12 +161,12 @@
     }
     .horsemen-item .bar-label {
       font-family: 'Inter', sans-serif;
-      font-size: 10px; font-weight: 400; line-height: 15px;
+      font-size: 11px; font-weight: 400; line-height: 15px;
       letter-spacing: 0.12px; color: #bbbbbb;
     }
     .horsemen-item .bar-score {
       font-family: 'Inter', sans-serif;
-      font-size: 10px; font-weight: 700; line-height: 15px;
+      font-size: 11px; font-weight: 700; line-height: 15px;
       letter-spacing: 0.12px; color: #efefef;
     }
 
@@ -183,7 +188,7 @@
     .chart-legend .legend-item {
       display: flex; align-items: center; gap: 6px;
       font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 600; line-height: 18px;
+      font-size: 13px; font-weight: 600; line-height: 18px;
       color: #ffffff;
     }
     .legend-dot {
@@ -200,7 +205,7 @@
     }
     .toxic-section-title {
       font-family: 'Inter', sans-serif;
-      font-size: 18px; font-weight: 800; line-height: 27px;
+      font-size: 20px; font-weight: 800; line-height: 27px;
       letter-spacing: -0.44px; color: #1a1a1a;
       padding-bottom: 8px;
     }
@@ -214,7 +219,7 @@
     }
     .toxic-card .toxic-label {
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 700; line-height: 27px;
+      font-size: 15px; font-weight: 700; line-height: 27px;
       color: #1a1a1a;
     }
     .toxic-card .toxic-quote-wrap {
@@ -223,7 +228,7 @@
     .toxic-card .toxic-quote {
       padding-left: 14px;
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 400; line-height: 1.7;
+      font-size: 15px; font-weight: 400; line-height: 1.7;
       color: #1a1a1a;
       font-style: italic;
       border-left: 3px solid #d4b0f5; /* default: other */
@@ -239,7 +244,7 @@
     }
     .toxic-card .toxic-speaker {
       font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 700; line-height: 18px;
+      font-size: 13px; font-weight: 700; line-height: 18px;
       color: #666666;
     }
     .toxic-card .expand-icon {
@@ -260,7 +265,7 @@
       background: rgba(0,0,0,0.15); border-radius: 20px;
       padding: 18px 20px;
       font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 400; line-height: 20px;
+      font-size: 13px; font-weight: 400; line-height: 20px;
       color: #1a1a1a;
     }
     .toxic-suggestion {
@@ -274,7 +279,7 @@
     }
     .toxic-suggestion .suggestion-title {
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 600; line-height: 21px;
+      font-size: 15px; font-weight: 600; line-height: 21px;
       color: #1a1a1a;
     }
     .copy-btn {
@@ -288,7 +293,7 @@
     .copy-btn svg { width: 16px; height: 16px; }
     .toxic-suggestion .suggestion-text {
       font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 400; line-height: 20px;
+      font-size: 13px; font-weight: 400; line-height: 20px;
       color: #2a2a1a;
     }
 
@@ -306,25 +311,26 @@
     .summary-card .section-title { color: #ffffff; }
     .summary-body {
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 400; line-height: 1.7;
+      font-size: 15px; font-weight: 400; line-height: 1.7;
       color: rgba(255,255,255,0.8);
     }
 
     /* ── Disclaimer ── */
     .disclaimer-section {
-      padding-top: 36px; padding-left: 16px; padding-right: 16px;
-      display: flex; flex-direction: column;
+      padding-top: 36px;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center;
     }
     .disclaimer-text {
       font-family: 'Inter', sans-serif;
-      font-size: 11px; font-weight: 400; line-height: 1.6;
+      font-size: 12px; font-weight: 400; line-height: 1.6;
       color: rgba(0,0,0,0.45);
     }
     .disclaimer-row {
       display: flex; align-items: center; gap: 6px;
       padding-top: 6px;
       font-family: 'Inter', sans-serif;
-      font-size: 11px; font-weight: 400; line-height: 1.6;
+      font-size: 12px; font-weight: 400; line-height: 1.6;
       color: rgba(0,0,0,0.45);
     }
 
@@ -339,14 +345,16 @@
 
   <div id="app" class="container tg-safe-area">
 
+    <div class="top-spacer"></div>
+
     <!-- 1. Toxic Score -->
     <div class="section">
-      <div id="scoreCard" class="score-card anim-slide"></div>
+      <div id="scoreCard" class="score-card"></div>
     </div>
 
     <!-- 2. Four Horsemen -->
     <div class="section">
-      <div class="horsemen-card-outer anim-slide" style="animation-delay:0.1s">
+      <div id="horsemenCard" class="horsemen-card-outer">
         <div class="section-title">Four Horsemen</div>
         <div class="section-subtitle">Behavioral Toxicity Scan: Measuring critical conflict markers based on Gottman's Cascade Model.</div>
         <div id="horsemenGrid" style="display:flex;flex-direction:column;gap:10px;padding-top:14px"></div>
@@ -355,7 +363,7 @@
 
     <!-- 3. Circumplex -->
     <div class="section">
-      <div class="circumplex-card anim-slide" style="animation-delay:0.2s">
+      <div id="circumplexCard" class="circumplex-card">
         <div class="section-title">Relationship Map</div>
         <div class="chart-wrapper">
           <canvas id="radarChart" width="340" height="300"></canvas>
@@ -372,14 +380,16 @@
 
     <!-- 5. Summary -->
     <div class="section">
-      <div id="summaryBox" class="summary-card anim-slide" style="animation-delay:0.3s"></div>
+      <div id="summaryBox" class="summary-card"></div>
     </div>
 
     <!-- 6. Disclaimer -->
-    <div class="disclaimer-section anim-slide" style="animation-delay:0.4s">
+    <div id="disclaimerSection" class="disclaimer-section">
       <div class="disclaimer-text">Results are for entertainment and informational purposes only. This analysis does not constitute professional psychological advice, diagnosis, or treatment. Always seek the advice of a qualified mental health professional.</div>
       <div class="disclaimer-row">Your conversation has been fully de-identified and will be destroyed after analysis.</div>
     </div>
+
+    <div class="bottom-spacer"></div>
 
   </div>
 
@@ -396,6 +406,26 @@
       grid: 'rgba(255,255,255,0.15)',
       text: 'rgba(255,255,255,0.6)',
     };
+
+    // ── Intersection Observer for scroll-triggered animations ──
+    const animCallbacks = new Map();
+
+    const animObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.classList.add('anim-slide');
+          const cb = animCallbacks.get(el);
+          if (cb) cb();
+          animObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    function observeAnim(el, callback) {
+      if (callback) animCallbacks.set(el, callback);
+      animObserver.observe(el);
+    }
 
     async function loadData() {
       try {
@@ -461,13 +491,13 @@
         </div>
       `;
 
-      // Animate score number counting up
-      setTimeout(() => {
+      // Trigger animation when card enters viewport
+      observeAnim(card, () => {
         const numEl = document.getElementById('scoreNum');
         if (numEl) animateCount(numEl, 0, score, 800, prefix);
         const bar = document.getElementById('scoreBar');
         if (bar) { requestAnimationFrame(() => { bar.classList.add('anim'); bar.style.width = score + '%'; }); }
-      }, 200);
+      });
     }
 
     // ── Four Horsemen ──
@@ -479,7 +509,7 @@
       grid.innerHTML = HORSEMEN.map((key, idx) => {
         const u = Math.round(gottman.user?.[key] || 0);
         const o = Math.round(gottman.other?.[key] || 0);
-        return `<div class="horsemen-item anim-slide" style="animation-delay:${0.15 + idx*0.06}s">
+        return `<div class="horsemen-item" data-horsemen-idx="${idx}">
           <div class="name-row"><span class="name">${HORSEMEN_LABELS[key]}</span></div>
           <div class="bars-section">
             <div class="bar-column">
@@ -494,17 +524,33 @@
         </div>`;
       }).join('');
 
-      // Animate horsemen bars + scores after render
-      setTimeout(() => {
-        grid.querySelectorAll('.bar-fill').forEach(bar => {
-          const target = parseInt(bar.dataset.target);
-          requestAnimationFrame(() => { bar.classList.add('anim'); bar.style.width = target + '%'; });
+      // Observe the horsemen card to trigger sub-animations
+      const card = document.getElementById('horsemenCard');
+      observeAnim(card, () => {
+        // Stagger slide-up for each horsemen item
+        const items = grid.querySelectorAll('.horsemen-item');
+        items.forEach((item, i) => {
+          setTimeout(() => {
+            item.classList.add('anim-slide');
+          }, i * 80);
         });
-        grid.querySelectorAll('.bar-score').forEach(el => {
-          const target = parseInt(el.dataset.target);
-          if (target) animateCount(el, 0, target, 700, '');
-        });
-      }, 300);
+
+        // Stagger bar + score animations after items start sliding
+        setTimeout(() => {
+          items.forEach((item, i) => {
+            setTimeout(() => {
+              item.querySelectorAll('.bar-fill').forEach(bar => {
+                const target = parseInt(bar.dataset.target);
+                requestAnimationFrame(() => { bar.classList.add('anim'); bar.style.width = target + '%'; });
+              });
+              item.querySelectorAll('.bar-score').forEach(el => {
+                const target = parseInt(el.dataset.target);
+                if (target) animateCount(el, 0, target, 700, '');
+              });
+            }, i * 80);
+          });
+        }, 150);
+      });
     }
 
     // ── Radar Chart with octagonal rings + expand animation ──
@@ -553,79 +599,81 @@
       const userVals = AXES.map(a => data.circumplex.user[a]);
       const otherVals = AXES.map(a => data.circumplex.other[a]);
 
-      // Animation state
-      let animProgress = 0;
-      const animDuration = 800;
-      const animStart = performance.now();
-
-      function drawFrame(progress) {
-        ctx.clearRect(0, 0, W, H);
-
-        // Octagonal rings (4 levels at 25%, 50%, 75%, 100%)
-        for (let ring = 1; ring <= 4; ring++) {
-          const r = (radius / 4) * ring * progress;
-          drawOctagon(ctx, cx, cy, r);
-          ctx.strokeStyle = COLORS.grid;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-
-        // Axis lines & labels
-        if (progress > 0.3) {
-          const labelAlpha = Math.min((progress - 0.3) / 0.7, 1);
-          ctx.font = '10px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-          AXES.forEach((_, i) => {
-            const angle = Math.PI*2 / AXES.length * i - Math.PI/2;
-            const p = { x: cx + (radius + 22) * Math.cos(angle), y: cy + (radius + 22) * Math.sin(angle) };
-            ctx.fillStyle = `rgba(255,255,255,${0.6 * labelAlpha})`;
-            ctx.fillText(AXIS_LABELS[i], p.x, p.y);
-            const te = { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
-            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(te.x, te.y);
-            ctx.strokeStyle = `rgba(255,255,255,${0.15 * labelAlpha})`;
-            ctx.lineWidth = 1; ctx.stroke();
-          });
-        }
-
-        // Data polygons expand from center
-        if (progress > 0.4) {
-          const dataProgress = Math.min((progress - 0.4) / 0.6, 1);
-          // Ease out
-          const ep = 1 - Math.pow(1 - dataProgress, 3);
-          const currentRadius = radius * ep;
-          drawDataPolygon(ctx, otherVals, COLORS.other.fill, COLORS.other.stroke, currentRadius, cx, cy);
-          drawDataPolygon(ctx, userVals, COLORS.user.fill, COLORS.user.stroke, currentRadius, cx, cy);
-
-          // Data points
-          otherVals.forEach((v, i) => {
-            const p = pointOnAxis(i, v, currentRadius, cx, cy);
-            ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2);
-            ctx.fillStyle = COLORS.other.stroke; ctx.fill();
-          });
-          userVals.forEach((v, i) => {
-            const p = pointOnAxis(i, v, currentRadius, cx, cy);
-            ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2);
-            ctx.fillStyle = COLORS.user.stroke; ctx.fill();
-          });
-        }
-
-        if (progress < 1) {
-          requestAnimationFrame(tick);
-        }
-      }
-
-      function tick(now) {
-        const elapsed = now - animStart;
-        animProgress = Math.min(elapsed / animDuration, 1);
-        drawFrame(animProgress);
-      }
-
-      requestAnimationFrame(tick);
-
-      // Legend
+      // Legend (static, no animation needed)
       document.getElementById('chartLegend').innerHTML = `
         <div class="legend-item"><div class="legend-dot user"></div>You</div>
         <div class="legend-item"><div class="legend-dot other"></div>Other</div>
       `;
+
+      // Trigger canvas animation when circumplex card enters viewport
+      const card = document.getElementById('circumplexCard');
+      observeAnim(card, () => {
+        let animProgress = 0;
+        const animDuration = 800;
+        const animStart = performance.now();
+
+        function drawFrame(progress) {
+          ctx.clearRect(0, 0, W, H);
+
+          // Octagonal rings (4 levels at 25%, 50%, 75%, 100%)
+          for (let ring = 1; ring <= 4; ring++) {
+            const r = (radius / 4) * ring * progress;
+            drawOctagon(ctx, cx, cy, r);
+            ctx.strokeStyle = COLORS.grid;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+
+          // Axis lines & labels
+          if (progress > 0.3) {
+            const labelAlpha = Math.min((progress - 0.3) / 0.7, 1);
+            ctx.font = '11px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+            AXES.forEach((_, i) => {
+              const angle = Math.PI*2 / AXES.length * i - Math.PI/2;
+              const p = { x: cx + (radius + 22) * Math.cos(angle), y: cy + (radius + 22) * Math.sin(angle) };
+              ctx.fillStyle = `rgba(255,255,255,${0.6 * labelAlpha})`;
+              ctx.fillText(AXIS_LABELS[i], p.x, p.y);
+              const te = { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+              ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(te.x, te.y);
+              ctx.strokeStyle = `rgba(255,255,255,${0.15 * labelAlpha})`;
+              ctx.lineWidth = 1; ctx.stroke();
+            });
+          }
+
+          // Data polygons expand from center
+          if (progress > 0.4) {
+            const dataProgress = Math.min((progress - 0.4) / 0.6, 1);
+            const ep = 1 - Math.pow(1 - dataProgress, 3);
+            const currentRadius = radius * ep;
+            drawDataPolygon(ctx, otherVals, COLORS.other.fill, COLORS.other.stroke, currentRadius, cx, cy);
+            drawDataPolygon(ctx, userVals, COLORS.user.fill, COLORS.user.stroke, currentRadius, cx, cy);
+
+            // Data points
+            otherVals.forEach((v, i) => {
+              const p = pointOnAxis(i, v, currentRadius, cx, cy);
+              ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2);
+              ctx.fillStyle = COLORS.other.stroke; ctx.fill();
+            });
+            userVals.forEach((v, i) => {
+              const p = pointOnAxis(i, v, currentRadius, cx, cy);
+              ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2);
+              ctx.fillStyle = COLORS.user.stroke; ctx.fill();
+            });
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(tick);
+          }
+        }
+
+        function tick(now) {
+          const elapsed = now - animStart;
+          animProgress = Math.min(elapsed / animDuration, 1);
+          drawFrame(animProgress);
+        }
+
+        requestAnimationFrame(tick);
+      });
     }
 
     // ── Toxic Sentences ──
@@ -647,7 +695,7 @@
         const speaker = isUser ? 'You' : 'Other';
 
         return `
-          <div class="toxic-card anim-slide" style="animation-delay:${0.25 + idx*0.08}s" onclick="this.classList.toggle('expanded')">
+          <div class="toxic-card" data-toxic-idx="${idx}" onclick="this.classList.toggle('expanded')">
             <div class="toxic-label">${s.label}</div>
             <div class="toxic-quote-wrap">
               <div class="toxic-quote ${quoteClass}">"${s.sentence}"</div>
@@ -676,6 +724,16 @@
           </div>
         `;
       }).join('');
+
+      // Observe each toxic card for scroll-triggered animation
+      list.querySelectorAll('.toxic-card').forEach((card, i) => {
+        card.style.setProperty('--anim-delay', `${i * 0.08}s`);
+        observeAnim(card);
+      });
+
+      // Observe the section title too
+      const title = section.querySelector('.toxic-section-title');
+      if (title) observeAnim(title);
     }
 
     // ── Copy to clipboard ──
@@ -690,10 +748,12 @@
 
     // ── Summary ──
     function renderSummary(summary) {
-      document.getElementById('summaryBox').innerHTML = `
+      const box = document.getElementById('summaryBox');
+      box.innerHTML = `
         <div class="summary-title-row"><span class="section-title">Summary</span></div>
         <div class="summary-body">${summary}</div>
       `;
+      observeAnim(box);
     }
 
     // ── Init ──
@@ -706,6 +766,10 @@
       renderRadar(data);
       renderSentences(data.toxic_sentences);
       renderSummary(data.summary);
+
+      // Observe disclaimer for scroll animation
+      observeAnim(document.getElementById('disclaimerSection'));
+
       if (tg) { tg.setHeaderColor('#f0efea'); tg.setBackgroundColor('#f0efea'); }
     }
     init();
