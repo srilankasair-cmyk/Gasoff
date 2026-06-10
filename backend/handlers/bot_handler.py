@@ -33,8 +33,10 @@ _analysis_store: dict[str, Optional[AnalysisResult]] = {}
 
 _lock = threading.Lock()
 _buffers: dict[int, dict] = {}
+_subscribe_buffers: dict[int, dict] = {}
 
 STAR_PRICE = 150
+BUY_STARS_URL = "https://fragment.com/stars"
 
 
 def _twa_base_url() -> str:
@@ -254,6 +256,30 @@ def _flush(chat_id: int, user_id: int) -> None:
     _telegram_send(chat_id, text, markup)
 
 
+def _flush_subscribe(chat_id: int, user_id: int) -> None:
+    """Send a single subscription prompt after 2s debounce."""
+    with _lock:
+        buf = _subscribe_buffers.pop(chat_id, None)
+    if buf is None:
+        return
+
+    _telegram_send(
+        chat_id,
+        "⚠️ **Free trial used up!**\n\n"
+        "🔥 **Tox Detector Premium**\n"
+        f"🌟 **{STAR_PRICE} ⭐ Stars** — valid for 30 days\n"
+        "✅ Unlimited relationship analysis\n"
+        "✅ Priority processing\n\n"
+        "📩 Invoice sent below 👇",
+    )
+    ok = _send_invoice(chat_id)
+    if not ok:
+        _telegram_send(
+            chat_id,
+            "⚠️ Could not create invoice. Try /subscribe",
+        )
+
+
 # ---------------------------------------------------------------------------
 # Webhook
 # ---------------------------------------------------------------------------
@@ -353,27 +379,36 @@ def telegram_webhook():
             _telegram_send(chat_id, "⚠️ Failed to create invoice. Please try again later.")
             return jsonify({"ok": False, "status": "invoice_failed"})
 
+        # ── Direct messages (not forwarded) → onboarding ──
+        if not (msg.forward_from or msg.forward_sender_name):
+            _telegram_send(chat_id,
+                "👋 Welcome to Tox Detector!\n\n"
+                "I analyze forwarded chat messages for relationship toxicity.\n\n"
+                "📌 How to use:\n"
+                "1️⃣ Open any chat → long-press a message → Select\n"
+                "2️⃣ Select messages → Forward → Tox Detector\n"
+                "3️⃣ Get your analysis automatically\n\n"
+                "Type /start for more information.")
+            return jsonify({"ok": True, "status": "onboarding"})
+
 
     # ── Check subscription before analysis ──
     if not can_analyze(user_id):
-        # Explain why + what Premium includes + Buy Stars button
-        _telegram_send(
-            chat_id,
-            "⚠️ **Free trial used up!**\n\n"
-            "🔥 **Tox Detector Premium**\n"
-            f"🌟 **{STAR_PRICE} ⭐ Stars** — valid for 30 days\n"
-            "✅ Unlimited relationship analysis\n"
-            "✅ Priority processing\n\n"
-            "📩 Invoice sent below 👇",
-        )
-        # Send invoice directly — one step, no extra click
-        ok = _send_invoice(chat_id)
-        if not ok:
-            _telegram_send(
-                chat_id,
-                "⚠️ Could not create invoice. Try /subscribe",
-            )
-        return jsonify({"ok": True, "status": "subscription_required"})
+        # Buffer and debounce — only one subscription prompt after 2s silence
+        with _lock:
+            is_first = chat_id not in _subscribe_buffers
+            if is_first:
+                _subscribe_buffers[chat_id] = {"timer": None}
+                _telegram_send(chat_id, "🔵 Aggregating messages...")
+            buf = _subscribe_buffers[chat_id]
+            buf["user_id"] = user_id
+            if buf["timer"] is not None:
+                buf["timer"].cancel()
+            timer = threading.Timer(2.0, _flush_subscribe, args=[chat_id, user_id])
+            timer.daemon = True
+            timer.start()
+            buf["timer"] = timer
+        return jsonify({"ok": True, "status": "buffered_subscribe"})
 
     # ── Buffer message for analysis ──
     speaker, name = _detect_speaker(msg)
