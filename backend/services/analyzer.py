@@ -21,7 +21,7 @@ from backend.models.schemas import (
 logger = logging.getLogger(__name__)
 
 _ANALYSIS_SYSTEM_PROMPT = (
-    'You are "Gas-off", a world-class relationship psychologist AI.\n'
+    'You are "Toxic Detector", a world-class relationship psychologist AI.\n'
     "Analyze the following chat conversation between two people.\n"
     "Messages are labelled as [You: NAME] (the person who forwarded this)\n"
     "and [Other: NAME] (the other person in the conversation).\n"
