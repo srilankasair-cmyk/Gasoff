@@ -14,6 +14,7 @@ from backend.models.schemas import (
     CircumplexAxis,
     CircumplexData,
     GottmanScores,
+    GottmanExplanations,
     GottmanData,
     ToxicSentence,
 )
@@ -75,11 +76,29 @@ _ANALYSIS_SYSTEM_PROMPT = (
     '    "original_speaker": "user | other | Person_A | Person_B",\n'
     '    "counter_suggestion": "anti-PUA phrase in English"\n'
     "  }],\n"
-    '  "summary": "brief analysis in English, max 3 sentences"\n'
+    '  "summary": "brief analysis in English, max 3 sentences",\n'
+    '  "gottman_explanations": {\n'
+    '    "criticism": "explain what this criticism score means for this specific relationship, citing concrete evidence from the conversation",\n'
+    '    "contempt": "explain what this contempt score means, why it matters (Gottman found contempt is the #1 predictor of divorce), with evidence from the conversation",\n'
+    '    "defensiveness": "explain what this defensiveness score means for this specific relationship, with evidence from the conversation",\n'
+    '    "stonewalling": "explain what this stonewalling score means for this specific relationship, with evidence from the conversation"\n'
+    "  },\n"
+    '  "circumplex_summary": "interpret the circumplex radar chart data (dominance, warmth, hostility patterns) into 2-3 sentences describing the overall relationship dynamic, citing specific axis patterns"\n'
     "}\n"
     "\n"
     "Gottman scores follow John Gottman's Four Horsemen (Criticism, Contempt, Defensiveness, Stonewalling).\n"
     "Circumplex follows the Interpersonal Circumplex model.\n"
+    "IMPORTANT — gottman_explanations: For each horseman where BOTH people score 0, omit that key entirely.\n"
+    "For non-zero scores, write 1-2 evidence-based sentences that:\n"
+    "  1. Explain what this score level means in the context of this specific relationship.\n"
+    "  2. Reference specific patterns or examples from the conversation as evidence.\n"
+    "  3. Use Gottman's research framework (e.g., Criticism attacks character not behavior;\n"
+    "     Contempt includes sarcasm, mockery, hostile humor, eye-rolling;\n"
+    "     Defensiveness is counter-blaming or victim-stance;\n"
+    "     Stonewalling is emotional withdrawal and shutting down).\n"
+    "IMPORTANT — circumplex_summary: Write 2-3 sentences interpreting the interpersonal circumplex patterns.\n"
+    "  Discuss who leads on dominance/warmth/hostility, whether the dynamic is complementary or conflicted,\n"
+    "  and what the overall pattern suggests about the relationship. Reference specific axis values.\n"
     "Use English labels for toxic sentences: Emotional Blackmail, Gaslighting, Belittling, "
     "Denial, Blame Shifting, Silent Treatment, Emotional Coercion etc.\n"
     "Counter-suggestions should be practical, empowering phrases in English. All output must be in English.\n"
@@ -139,6 +158,18 @@ def _parse_result(data: dict) -> AnalysisResult:
     go = data.get("gottman_other", data.get("gottman", {}))
     cu = data["circumplex"]["user"]
     co = data["circumplex"]["other"]
+
+    # Parse AI-generated explanations
+    ge = data.get("gottman_explanations", {})
+    gottman_explanations = None
+    if ge and any(ge.get(k) for k in ['criticism', 'contempt', 'defensiveness', 'stonewalling']):
+        gottman_explanations = GottmanExplanations(
+            criticism=ge.get("criticism"),
+            contempt=ge.get("contempt"),
+            defensiveness=ge.get("defensiveness"),
+            stonewalling=ge.get("stonewalling"),
+        )
+
     return AnalysisResult(
         other_name=data.get("other_name", "Other"),
         toxicity_score=data["toxicity_score"],
@@ -157,6 +188,7 @@ def _parse_result(data: dict) -> AnalysisResult:
                 defensiveness=go.get("defensiveness", 0),
                 stonewalling=go.get("stonewalling", 0),
             ),
+            explanations=gottman_explanations,
         ),
         circumplex=CircumplexData(
             user=CircumplexAxis(**cu),
@@ -164,6 +196,7 @@ def _parse_result(data: dict) -> AnalysisResult:
         ),
         toxic_sentences=[ToxicSentence(**s) for s in data.get("toxic_sentences", [])],
         summary=data.get("summary", ""),
+        circumplex_summary=data.get("circumplex_summary"),
     )
 
 
@@ -181,6 +214,23 @@ def _mock_result() -> AnalysisResult:
             ),
             other=GottmanScores(
                 criticism=68, contempt=55, defensiveness=30, stonewalling=42,
+            ),
+            explanations=GottmanExplanations(
+                criticism="TA's criticism score (68%) is significantly elevated. "
+                          "In the conversation, TA repeatedly attacked your character rather than addressing specific behaviors — "
+                          "for example, using 'you always' statements that frame personal failings rather than isolated incidents. "
+                          "Your lower score (15%) suggests you mostly avoid this pattern.",
+                contempt="TA's contempt score (55%) is the most concerning finding. "
+                         "Gottman's research identifies contempt as the single strongest predictor of relationship dissolution. "
+                         "TA used sarcasm and dismissive language, signaling a lack of respect. "
+                         "Your score (5%) shows you do not reciprocate this dynamic.",
+                defensiveness="Your defensiveness score (60%) is notable. "
+                              "This is a common response to persistent criticism — when someone feels constantly attacked, "
+                              "they often develop a protective wall of counter-blame or victim-stance. "
+                              "TA also shows some defensiveness (30%), suggesting both parties struggle to hear feedback.",
+                stonewalling="TA's stonewalling (42%) indicates emotional withdrawal during conflict. "
+                             "This may manifest as shutting down, giving short responses, or physically leaving conversations. "
+                             "Your stonewalling (20%) is lower, suggesting you remain more engaged despite the tension.",
             ),
         ),
         circumplex=CircumplexData(
@@ -211,4 +261,10 @@ def _mock_result() -> AnalysisResult:
         ],
         summary="The other person shows a dominant communication pattern "
                 "with emotional blackmail and gaslighting.",
+        circumplex_summary="TA dominates the interpersonal space with high dominance (75) and arrogance (60), "
+                           "combined with notable coldness (50) and hostility (55). "
+                           "You lean heavily toward the submissive-accommodating quadrant (submission 60, humility 50) "
+                           "while maintaining warmth and empathy. This creates a strongly asymmetrical dynamic "
+                           "where one person leads with control and criticism while the other responds with deference — "
+                           "a pattern that, without intervention, tends to deepen over time.",
     )

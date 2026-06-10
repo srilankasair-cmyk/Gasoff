@@ -87,9 +87,17 @@ class GottmanScores(BaseModel):
     stonewalling: float = Field(..., ge=0, le=100)
 
 
+class GottmanExplanations(BaseModel):
+    criticism: Optional[str] = None
+    contempt: Optional[str] = None
+    defensiveness: Optional[str] = None
+    stonewalling: Optional[str] = None
+
+
 class GottmanData(BaseModel):
     user: GottmanScores
     other: GottmanScores
+    explanations: Optional[GottmanExplanations] = None
 
 
 class CircumplexAxis(BaseModel):
@@ -125,3 +133,4 @@ class AnalysisResult(BaseModel):
     circumplex: CircumplexData
     toxic_sentences: list[ToxicSentence]
     summary: str
+    circumplex_summary: Optional[str] = None

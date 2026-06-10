@@ -169,8 +169,27 @@
       font-size: 12px; font-weight: 700; line-height: 15px;
       letter-spacing: 0.12px; color: #efefef;
     }
+    .horsemen-item .horsemen-explanation {
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 400; line-height: 20px;
+      letter-spacing: -0.08px; color: rgba(255,255,255,0.65);
+    }
 
     /* ── Circumplex Card (olive brown) ── */
+    .circumplex-card {
+      background: #887d5f; border-radius: 24px;
+      padding: 24px 20px 24px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .circumplex-card .section-title { color: #ffffff; }
+    .circumplex-summary {
+      margin-top: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px; font-weight: 400; line-height: 22px;
+      letter-spacing: -0.08px; color: rgba(255,255,255,0.75);
+    }
     .circumplex-card {
       background: #887d5f; border-radius: 24px;
       padding: 24px 20px 24px;
@@ -369,6 +388,7 @@
           <canvas id="radarChart" width="340" height="300"></canvas>
         </div>
         <div class="chart-legend" id="chartLegend"></div>
+        <div class="circumplex-summary" id="circumplexSummary"></div>
       </div>
     </div>
 
@@ -500,9 +520,11 @@
 
     function renderHorsemen(gottman) {
       const grid = document.getElementById('horsemenGrid');
+      const expl = gottman.explanations || {};
       grid.innerHTML = HORSEMEN.map((key, idx) => {
         const u = Math.round(gottman.user?.[key] || 0);
         const o = Math.round(gottman.other?.[key] || 0);
+        const explanation = expl[key] || '';
         return `<div class="horsemen-item" data-horsemen-idx="${idx}">
           <div class="name-row"><span class="name">${HORSEMEN_LABELS[key]}</span></div>
           <div class="bars-section">
@@ -515,6 +537,7 @@
               <div class="bar-label-row"><span class="bar-label">${otherName}</span><span class="bar-score" data-target="${o}">0%</span></div>
             </div>
           </div>
+          ${explanation ? `<div class="horsemen-explanation">${explanation}</div>` : ''}
         </div>`;
       }).join('');
 
@@ -599,6 +622,9 @@
         <div class="legend-item"><div class="legend-dot other"></div>${otherName}</div>
       `;
 
+      // Relationship summary text
+      renderCircumplexSummary(data);
+
       // Trigger canvas animation when circumplex card enters viewport
       const card = document.getElementById('circumplexCard');
       observeAnim(card, () => {
@@ -668,6 +694,12 @@
 
         requestAnimationFrame(tick);
       });
+    }
+
+    function renderCircumplexSummary(data) {
+      const summaryEl = document.getElementById('circumplexSummary');
+      if (!summaryEl) return;
+      summaryEl.textContent = data.circumplex_summary || '';
     }
 
     // ── Toxic Sentences ──
