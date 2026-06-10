@@ -81,7 +81,7 @@ def _send_invoice(chat_id: int) -> bool:
                 "chat_id": chat_id,
                 "title": "Tox Detector Premium",
                 "description": "🌟 Launch special: 150 Stars (normally 250)! Unlimited analysis for 30 days. Save 40%!",
-                "payload": "gasoff_sub_30d",
+                "payload": "toxdetector_sub_30d",
                 "currency": "XTR",
                 "provider_token": "", "prices": [{"amount": STAR_PRICE, "label": "30-Day Subscription"}],
             },

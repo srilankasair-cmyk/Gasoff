@@ -12,7 +12,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-DATA_FILE = "/tmp/gasoff_subscriptions.json"
+DATA_FILE = "/tmp/toxdetector_subscriptions.json"
 FREE_ANALYSES = 1          # Number of free analyses
 STAR_PRICE = 150            # Price in Telegram Stars
 SUBSCRIPTION_DAYS = 30     # Days per subscription
