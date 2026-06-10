@@ -1,4 +1,4 @@
-"""Flask entry point for Toxic Detector backend."""
+"""Flask entry point for Tox Detector backend."""
 
 import logging
 import os
@@ -56,5 +56,5 @@ def health():
 
 
 if __name__ == "__main__":
-    logger.info(f"Starting Toxic Detector on {settings.HOST}:{settings.PORT}")
+    logger.info(f"Starting Tox Detector on {settings.HOST}:{settings.PORT}")
     app.run(host=settings.HOST, port=settings.PORT, debug=True)

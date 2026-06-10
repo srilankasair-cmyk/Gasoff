@@ -79,7 +79,7 @@ def _send_invoice(chat_id: int) -> bool:
             f"https://api.telegram.org/bot{token}/sendInvoice",
             json={
                 "chat_id": chat_id,
-                "title": "Toxic Detector Premium",
+                "title": "Tox Detector Premium",
                 "description": "🌟 Launch special: 150 Stars (normally 250)! Unlimited analysis for 30 days. Save 40%!",
                 "payload": "gasoff_sub_30d",
                 "currency": "XTR",
@@ -298,7 +298,7 @@ def telegram_webhook():
         activate_subscription(user_id)
         _telegram_send(
             chat_id,
-            "🎉 **Welcome to Toxic Detector Premium!**\n\n"
+            "🎉 **Welcome to Tox Detector Premium!**\n\n"
             "✅ Payment received — your Premium subscription is active for 30 days\n"
             "✅ Unlimited relationship analysis\n"
             "✅ Priority processing\n\n"
@@ -313,7 +313,7 @@ def telegram_webhook():
         if text == "/start":
             free_left = remaining_free(user_id)
             _telegram_send(chat_id,
-                "👋 Welcome to **Toxic Detector**!\n\n"
+                "👋 Welcome to **Tox Detector**!\n\n"
                 "📌 **What is this?**\n"
                 "Based on psychology research (Gottman Four Horsemen + "
                 "Interpersonal Circumplex Model) to analyze unhealthy "
@@ -325,7 +325,7 @@ def telegram_webhook():
                 "1️⃣ Open any chat (private or group)\n"
                 "2️⃣ Long-press a message → tap **Select**\n"
                 "3️⃣ Select the messages you want analyzed\n"
-                "4️⃣ Tap **Forward** → choose **Toxic Detector** → Send\n"
+                "4️⃣ Tap **Forward** → choose **Tox Detector** → Send\n"
                 "5️⃣ Wait 2 seconds — the analysis appears automatically\n\n"
                 "🔐 All conversations are de-identified before analysis "
                 "to protect your privacy.\n\n"
@@ -336,7 +336,7 @@ def telegram_webhook():
             _telegram_send(
                 chat_id,
                 "💎 **Buy Telegram Stars**\n\n"
-                "You need ⭐ Stars to subscribe to Toxic Detector Premium.\n\n"
+                "You need ⭐ Stars to subscribe to Tox Detector Premium.\n\n"
                 "Tap the button below to purchase Stars through Telegram 👇",
                 reply_markup={
                     "inline_keyboard": [[
@@ -360,7 +360,7 @@ def telegram_webhook():
         _telegram_send(
             chat_id,
             "⚠️ **Free trial used up!**\n\n"
-            "🔥 **Toxic Detector Premium**\n"
+            "🔥 **Tox Detector Premium**\n"
             f"🌟 **{STAR_PRICE} ⭐ Stars** — valid for 30 days\n"
             "✅ Unlimited relationship analysis\n"
             "✅ Priority processing\n\n"
@@ -423,5 +423,5 @@ def test_telegram():
         chat_id = int(chat_id)
     except ValueError:
         return jsonify({"error": "chat_id must be integer"}), 400
-    ok = _telegram_send(chat_id, "🧪 Toxic Detector diagnostic: all connections OK ✅")
+    ok = _telegram_send(chat_id, "🧪 Tox Detector diagnostic: all connections OK ✅")
     return jsonify({"sent": ok})
