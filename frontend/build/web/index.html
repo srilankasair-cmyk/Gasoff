@@ -52,7 +52,7 @@
     }
     .anim-slide { animation: slideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
-    /* ── Toxic Score Card (lime) ── */
+    /* ── Toxicity Score Card (lime) ── */
     .score-card {
       background: #c9f135; border-radius: 24px;
       padding: 28px 24px 24px;
@@ -347,7 +347,7 @@
 
     <div class="top-spacer"></div>
 
-    <!-- 1. Toxic Score -->
+    <!-- 1. Toxicity Score -->
     <div class="section">
       <div id="scoreCard" class="score-card"></div>
     </div>
@@ -476,7 +476,7 @@
       else tagText = `${name} shows ${tier} toward you`;
 
       card.innerHTML = `
-        <div class="label">Toxic Score</div>
+        <div class="label">Toxicity Score</div>
         <div class="score-row"><div class="score-number" id="scoreNum">${prefix}0</div></div>
         <div class="score-bar-wrap"><div class="score-bar-fill" id="scoreBar"></div></div>
         <div class="score-detail">
