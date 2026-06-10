@@ -399,6 +399,7 @@
 
     const analysisId = window.location.pathname.split('/').pop() || 'demo';
     const API_BASE = window.location.origin;
+    let otherName = '';
 
     const COLORS = {
       user: { fill: 'rgba(201,241,53,0.18)', stroke: '#c9f135', label: 'You' },
@@ -430,28 +431,10 @@
     async function loadData() {
       try {
         const res = await fetch(`${API_BASE}/api/analysis/${analysisId}`);
-        if (!res.ok) throw new Error('Not found');
+        if (!res.ok) return { deleted: true };
         return await res.json();
       } catch {
-        return {
-          other_name: 'Iris',
-          toxicity_score: 20,
-          toxicity_direction: 'other_to_self',
-          toxicity_explanation: 'Iris expresses frustration about past group work and hints at dissatisfaction, but the conversation remains mostly constructive and supportive.',
-          gottman: {
-            user: { criticism: 10, contempt: 5, defensiveness: 10, stonewalling: 5 },
-            other: { criticism: 20, contempt: 15, defensiveness: 10, stonewalling: 15 },
-          },
-          circumplex: {
-            user: { dominance: -30, arrogance: -40, coldness: -20, hostility: -10, submission: 60, humility: 50, warmth: 40, empathy: 50 },
-            other: { dominance: 30, arrogance: 25, coldness: 20, hostility: 25, submission: -30, humility: -20, warmth: -10, empathy: -5 },
-          },
-          toxic_sentences: [
-            { sentence: 'I had a group work with him last semester and I had to develop his part in the documentation.', label: '# Complaint about third party', explanation: 'Denying the other person\'s feelings, making them doubt their own judgment.', original_speaker: 'other', counter_suggestion: 'Iris expresses frustration about past group work and hints at dissatisfaction, but the conversation remains mostly constructive and supportive.' },
-            { sentence: 'I had a group work with him last semester and I had to develop his part in the documentation.', label: '# Complaint about third party', explanation: 'Denying the other person\'s feelings, making them doubt their own judgment.', original_speaker: 'you', counter_suggestion: 'Iris expresses frustration about past group work and hints at dissatisfaction, but the conversation remains mostly constructive and supportive.' },
-          ],
-          summary: 'The conversation is generally positive and collaborative. Iris expresses some concerns but the communication remains constructive. Both parties show willingness to resolve issues together.',
-        };
+        return { deleted: true };
       }
     }
 
@@ -477,9 +460,20 @@
       let prefix = '+';
       if (isSelfHarm) prefix = '-';
       else if (isMutual) prefix = '';
-      let tagText = `${data.other_name} is harming you`;
-      if (isSelfHarm) tagText = `You are harming ${data.other_name}`;
-      else if (isMutual) tagText = 'Mutual toxicity detected';
+
+      // Score-based tiered descriptions
+      const name = otherName || 'the other person';
+      let tier;
+      if (score <= 10) tier = 'healthy communication';
+      else if (score <= 25) tier = 'mild negative patterns';
+      else if (score <= 50) tier = 'moderate toxicity';
+      else if (score <= 75) tier = 'significant toxicity';
+      else tier = 'severe toxicity';
+
+      let tagText;
+      if (isSelfHarm) tagText = `You show ${tier} toward ${name}`;
+      else if (isMutual) tagText = `Mutual ${tier} detected`;
+      else tagText = `${name} shows ${tier} toward you`;
 
       card.innerHTML = `
         <div class="label">Toxic Score</div>
@@ -518,7 +512,7 @@
             </div>
             <div class="bar-column">
               <div class="bar-track-wrap"><div class="bar-fill other" data-target="${o}"></div></div>
-              <div class="bar-label-row"><span class="bar-label">Other</span><span class="bar-score" data-target="${o}">0%</span></div>
+              <div class="bar-label-row"><span class="bar-label">${otherName}</span><span class="bar-score" data-target="${o}">0%</span></div>
             </div>
           </div>
         </div>`;
@@ -602,7 +596,7 @@
       // Legend (static, no animation needed)
       document.getElementById('chartLegend').innerHTML = `
         <div class="legend-item"><div class="legend-dot user"></div>You</div>
-        <div class="legend-item"><div class="legend-dot other"></div>Other</div>
+        <div class="legend-item"><div class="legend-dot other"></div>${otherName}</div>
       `;
 
       // Trigger canvas animation when circumplex card enters viewport
@@ -692,7 +686,7 @@
         const isOther = s.original_speaker === 'other' || s.original_speaker === 'Person_A' || s.original_speaker === 'Person_B';
         const quoteClass = isUser ? 'user-quote' : 'other-quote';
         const suggestionClass = isUser ? 'user' : 'other';
-        const speaker = isUser ? 'You' : 'Other';
+        const speaker = isUser ? 'You' : otherName;
 
         return `
           <div class="toxic-card" data-toxic-idx="${idx}" onclick="this.classList.toggle('expanded')">
@@ -761,6 +755,21 @@
       const data = await loadData();
       document.getElementById('loader').classList.add('hide');
       document.getElementById('app').classList.add('show');
+
+      if (data.deleted) {
+        document.getElementById('app').innerHTML = `
+          <div class="top-spacer"></div>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;gap:16px;">
+            <div style="font-family:'Inter',sans-serif;font-size:20px;font-weight:800;color:#1a1a1a;">Data Security</div>
+            <div style="font-family:'Inter',sans-serif;font-size:14px;font-weight:400;line-height:1.7;color:rgba(0,0,0,0.6);">To protect your data security, results have been permanently deleted after viewing.</div>
+            <div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:400;color:rgba(0,0,0,0.4);">Please re-run the analysis from the bot if needed.</div>
+          </div>
+          <div class="bottom-spacer"></div>
+        `;
+        return;
+      }
+
+      otherName = data.other_name || 'Other';
       renderScore(data);
       renderHorsemen(data.gottman);
       renderRadar(data);

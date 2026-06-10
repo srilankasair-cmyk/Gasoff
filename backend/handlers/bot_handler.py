@@ -35,7 +35,6 @@ _lock = threading.Lock()
 _buffers: dict[int, dict] = {}
 
 STAR_PRICE = 150
-BUY_STARS_URL = "https://t.me/stars"
 
 
 def _twa_base_url() -> str:
@@ -85,17 +84,13 @@ def _send_invoice(chat_id: int) -> bool:
                 "payload": "gasoff_sub_30d",
                 "currency": "XTR",
                 "provider_token": "", "prices": [{"amount": STAR_PRICE, "label": "30-Day Subscription"}],
-                "reply_markup": {
-                    "inline_keyboard": [[
-                        {"text": "⭐ Buy Stars", "url": BUY_STARS_URL}
-                    ]]
-                },
             },
             timeout=15,
         )
         ok = resp.status_code == 200
         if not ok:
-            logger.error("sendInvoice fail: %s %s", resp.status_code, resp.text[:200])
+            err_text = resp.text[:300]
+            logger.error("sendInvoice fail: %s %s", resp.status_code, err_text)
         return ok
     except Exception as e:
         logger.error("sendInvoice error: %s", e)
@@ -165,12 +160,29 @@ def _fmt_toxicity(result: AnalysisResult) -> str:
     score = int(result.toxicity_score)
     direction = result.toxicity_direction
     explanation = result.toxicity_explanation
-    if direction == "self_to_other":
-        icon, label, desc = "⬇️", f"-{score}%", "You are harming the other person"
-    elif direction == "mutual":
-        icon, label, desc = "🔄", f"{score}%", "Both sides are harming each other"
+    name = result.other_name or "the other person"
+
+    # Score-based tiered descriptions
+    if score <= 10:
+        tier = "healthy communication"
+    elif score <= 25:
+        tier = "mild negative patterns"
+    elif score <= 50:
+        tier = "moderate toxicity"
+    elif score <= 75:
+        tier = "significant toxicity"
     else:
-        icon, label, desc = "⬆️", f"+{score}%", "The other person is harming you"
+        tier = "severe toxicity"
+
+    if direction == "self_to_other":
+        icon, label = "⬇️", f"-{score}%"
+        desc = f"You show {tier} toward {name}"
+    elif direction == "mutual":
+        icon, label = "🔄", f"{score}%"
+        desc = f"Mutual {tier} detected"
+    else:
+        icon, label = "⬆️", f"+{score}%"
+        desc = f"{name} shows {tier} toward you"
     parts = [f"📊 Toxicity Score: {icon} {label} ({desc})"]
     if explanation:
         parts.append(f"💡 {explanation}")
@@ -234,10 +246,7 @@ def _flush(chat_id: int, user_id: int) -> None:
         "✅ Analysis Complete!\n",
         _fmt_toxicity(result),
         "",
-        _fmt_gottman(result),
-        "",
-        f"⚠️ Detected {len(result.toxic_sentences)} toxic statements",
-        f"🔍 Tap below to view the full relationship dashboard",
+        "🔍 Tap below to view the full relationship dashboard",
     ]
     text = "\n".join(resp_parts)
     twa = f"{_twa_base_url()}/twa/{aid}"
@@ -289,9 +298,11 @@ def telegram_webhook():
         activate_subscription(user_id)
         _telegram_send(
             chat_id,
-            "✅ **Payment received!** Your Premium subscription is now active "
-            "for 30 days. Start analyzing! 🎉\n\n"
-            "Forward a message to get started 👇",
+            "🎉 **Welcome to Gas-off Premium!**\n\n"
+            "✅ Payment received — your Premium subscription is active for 30 days\n"
+            "✅ Unlimited relationship analysis\n"
+            "✅ Priority processing\n\n"
+            "Forward a chat to analyze right now 👇",
         )
         return jsonify({"ok": True, "status": "subscribed"})
 
@@ -342,16 +353,25 @@ def telegram_webhook():
             _telegram_send(chat_id, "⚠️ Failed to create invoice. Please try again later.")
             return jsonify({"ok": False, "status": "invoice_failed"})
 
+
     # ── Check subscription before analysis ──
     if not can_analyze(user_id):
+        # Explain why + what Premium includes + Buy Stars button
+        _telegram_send(
+            chat_id,
+            "⚠️ **Free trial used up!**\n\n"
+            "🔥 **Gas-off Premium**\n"
+            f"🌟 **{STAR_PRICE} ⭐ Stars** — valid for 30 days\n"
+            "✅ Unlimited relationship analysis\n"
+            "✅ Priority processing\n\n"
+            "📩 Invoice sent below 👇",
+        )
+        # Send invoice directly — one step, no extra click
         ok = _send_invoice(chat_id)
         if not ok:
             _telegram_send(
                 chat_id,
-                "⚠️ **Free trial used up!**\n\n"
-                "Could not create invoice automatically.\n\n"
-                "Please try again with /subscribe or buy ⭐ Stars here:\n"
-                f"{BUY_STARS_URL}",
+                "⚠️ Could not create invoice. Try /subscribe",
             )
         return jsonify({"ok": True, "status": "subscription_required"})
 
@@ -390,9 +410,9 @@ def telegram_webhook():
 # ---------------------------------------------------------------------------
 @bp.route("/api/analysis/<analysis_id>")
 def get_analysis(analysis_id: str):
-    result = _analysis_store.get(analysis_id)
+    result = _analysis_store.pop(analysis_id, None)
     if result is None:
-        return jsonify({"error": "Not found"}), 404
+        return jsonify({"error": "Not found", "deleted": True}), 404
     return jsonify(result.model_dump())
 
 
