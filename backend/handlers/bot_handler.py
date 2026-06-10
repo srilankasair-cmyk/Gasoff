@@ -155,6 +155,28 @@ def _build_conversation(entries: list[dict]) -> str:
     return "\n\n".join(lines)
 
 
+def _send_welcome(chat_id: int, user_id: int) -> None:
+    free_left = remaining_free(user_id)
+    _telegram_send(chat_id,
+        "👋 Welcome to **Tox Detector**!\n\n"
+        "📌 **What is this?**\n"
+        "Based on psychology research (Gottman Four Horsemen + "
+        "Interpersonal Circumplex Model) to analyze unhealthy "
+        "communication patterns in your chats.\n\n"
+        "🎁 **Free Trial:** You have "
+        f"{free_left} free analysis{'es' if free_left != 1 else ''}.\n"
+        "After that, subscribe via Telegram Stars.\n\n"
+        "📌 **How to use:**\n"
+        "1️⃣ Open any chat (private or group)\n"
+        "2️⃣ Long-press a message → tap **Select**\n"
+        "3️⃣ Select the messages you want analyzed\n"
+        "4️⃣ Tap **Forward** → choose **Tox Detector** → Send\n"
+        "5️⃣ Wait 2 seconds — the analysis appears automatically\n\n"
+        "🔐 All conversations are de-identified before analysis "
+        "to protect your privacy.\n\n"
+        "Try it now — forward a message! 👇")
+
+
 # ---------------------------------------------------------------------------
 # Formatting
 # ---------------------------------------------------------------------------
@@ -337,25 +359,7 @@ def telegram_webhook():
         text = msg.text.strip()
 
         if text == "/start":
-            free_left = remaining_free(user_id)
-            _telegram_send(chat_id,
-                "👋 Welcome to **Tox Detector**!\n\n"
-                "📌 **What is this?**\n"
-                "Based on psychology research (Gottman Four Horsemen + "
-                "Interpersonal Circumplex Model) to analyze unhealthy "
-                "communication patterns in your chats.\n\n"
-                "🎁 **Free Trial:** You have "
-                f"{free_left} free analysis{'es' if free_left != 1 else ''}.\n"
-                "After that, subscribe via Telegram Stars.\n\n"
-                "📌 **How to use:**\n"
-                "1️⃣ Open any chat (private or group)\n"
-                "2️⃣ Long-press a message → tap **Select**\n"
-                "3️⃣ Select the messages you want analyzed\n"
-                "4️⃣ Tap **Forward** → choose **Tox Detector** → Send\n"
-                "5️⃣ Wait 2 seconds — the analysis appears automatically\n\n"
-                "🔐 All conversations are de-identified before analysis "
-                "to protect your privacy.\n\n"
-                "Try it now — forward a message! 👇")
+            _send_welcome(chat_id, user_id)
             return jsonify({"ok": True, "status": "welcome"})
 
         if text == "/buystars":
@@ -379,22 +383,15 @@ def telegram_webhook():
             _telegram_send(chat_id, "⚠️ Failed to create invoice. Please try again later.")
             return jsonify({"ok": False, "status": "invoice_failed"})
 
-        # ── Direct messages (not forwarded) → onboarding ──
-        if not (msg.forward_from or msg.forward_sender_name):
-            _telegram_send(chat_id,
-                "👋 Welcome to Tox Detector!\n\n"
-                "I analyze forwarded chat messages for relationship toxicity.\n\n"
-                "📌 How to use:\n"
-                "1️⃣ Open any chat → long-press a message → Select\n"
-                "2️⃣ Select messages → Forward → Tox Detector\n"
-                "3️⃣ Get your analysis automatically\n\n"
-                "Type /start for more information.")
-            return jsonify({"ok": True, "status": "onboarding"})
+    # ── Non-forwarded messages → onboarding (same as /start) ──
+    if not (msg.forward_from or msg.forward_sender_name):
+        _send_welcome(chat_id, user_id)
+        return jsonify({"ok": True, "status": "onboarding"})
 
 
     # ── Check subscription before analysis ──
     if not can_analyze(user_id):
-        # Buffer and debounce — only one subscription prompt after 2s silence
+        # Debounce — only one subscription prompt after 2s silence
         with _lock:
             is_first = chat_id not in _subscribe_buffers
             if is_first:
