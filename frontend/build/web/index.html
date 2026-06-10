@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gas-off · Relationship Toxicity Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ── Reset & Base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
       background: #0b0e17;
-      color: #e8edf5;
+      color: #ffffff;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
@@ -20,146 +23,173 @@
       position: fixed; inset: 0; z-index: 9999;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       background: #0b0e17;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.5s ease;
     }
     #loader.hide { opacity: 0; pointer-events: none; }
     .spinner {
-      width: 48px; height: 48px; border: 4px solid rgba(108,92,231,0.2);
-      border-top-color: #6c5ce7; border-radius: 50%;
+      width: 40px; height: 40px; border: 3px solid rgba(201,241,53,0.15);
+      border-top-color: #c9f135; border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loader-text { margin-top: 16px; font-size: 14px; color: #6c5ce7; letter-spacing: 1px; }
-    .loader-sub { margin-top: 6px; font-size: 12px; color: #636e72; }
+    .loader-text { margin-top: 12px; font-size: 13px; color: #c9f135; font-weight: 600; letter-spacing: 0.5px; }
 
     /* ── Container ── */
-    .container { max-width: 480px; margin: 0 auto; padding: 16px 16px 40px; display: none; }
+    .container { max-width: 380px; margin: 0 auto; padding: 28px 24px 40px; display: none; }
     .container.show { display: block; }
-
-    /* ── Header ── */
-    .header { text-align: center; padding: 20px 0 16px; }
-    .header h1 {
-      font-size: 20px; font-weight: 700;
-      background: linear-gradient(135deg, #6c5ce7, #fd79a8);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .header .subtitle { font-size: 12px; color: #636e72; margin-top: 4px; }
-
-    /* ── Toxicity Score Card ── */
-    .score-card {
-      background: linear-gradient(135deg, #1a1d2e, #2d1b3d);
-      border-radius: 20px; padding: 24px; text-align: center;
-      margin-bottom: 16px; position: relative; overflow: hidden;
-    }
-    .score-card::before {
-      content: ''; position: absolute; top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background: radial-gradient(circle at 30% 50%, rgba(108,92,231,0.08), transparent 60%);
-    }
-    .score-card .label { font-size: 13px; color: #b2bec3; position: relative; }
-    .score-card .other-name {
-      font-size: 22px; font-weight: 700; margin: 4px 0 12px; position: relative;
-      color: #fd79a8;
-    }
-    .score-number {
-      font-size: 56px; font-weight: 800; position: relative;
-      background: linear-gradient(135deg, #6c5ce7, #fd79a8);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .score-number.danger { background: linear-gradient(135deg, #e17055, #d63031); -webkit-background-clip: text; background-clip: text; }
-    .score-number.ok { background: linear-gradient(135deg, #00b894, #55efc4); -webkit-background-clip: text; background-clip: text; }
-    .score-number.medium { background: linear-gradient(135deg, #fdcb6e, #e17055); -webkit-background-clip: text; background-clip: text; }
-    .score-unit { font-size: 16px; -webkit-text-fill-color: #636e72; }
-    .score-bar {
-      position: relative; margin-top: 12px; height: 6px;
-      background: #2d2d44; border-radius: 3px; overflow: hidden;
-    }
-    .score-bar-fill {
-      height: 100%; border-radius: 3px;
-      background: linear-gradient(90deg, #6c5ce7, #fd79a8);
-      transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .score-bar-fill.danger { background: linear-gradient(90deg, #e17055, #d63031); }
-    .score-bar-fill.ok { background: linear-gradient(90deg, #00b894, #55efc4); }
-    .score-bar-fill.medium { background: linear-gradient(90deg, #fdcb6e, #e17055); }
 
     /* ── Section Title ── */
     .section-title {
-      font-size: 15px; font-weight: 600; margin: 24px 0 12px;
-      display: flex; align-items: center; gap: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 18px; font-weight: 800; line-height: 27px;
+      letter-spacing: -0.44px; color: #ffffff;
+      margin-bottom: 2px;
     }
-    .section-title .badge {
-      font-size: 11px; background: #2d2d44; padding: 2px 8px;
-      border-radius: 10px; color: #b2bec3; font-weight: 400;
+    .section-subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 400; line-height: 20px;
+      letter-spacing: -0.08px; color: rgba(255,255,255,0.55);
+      margin-bottom: 10px;
     }
 
-    /* ── Gottman Cards ── */
-    .gottman-grid { display: grid; gap: 10px; }
-    .gottman-item {
-      background: #151928; border-radius: 14px; padding: 14px 16px;
+    /* ── Toxic Score Card ── */
+    .score-card {
+      background: #c9f135; border-radius: 24px;
+      padding: 28px 24px 24px;
+      margin-bottom: 12px;
+      display: flex; flex-direction: column; gap: 8px;
     }
-    .gottman-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    .score-card .label {
+      font-family: 'Inter', sans-serif;
+      font-size: 18px; font-weight: 800; line-height: 27px;
+      letter-spacing: -0.44px; color: #444444;
     }
-    .gottman-name { font-size: 13px; font-weight: 500; }
-    .gottman-score { font-size: 14px; font-weight: 700; }
-    .gottman-name .en { font-size: 11px; color: #636e72; font-weight: 400; margin-left: 6px; }
-    .gottman-track {
-      height: 6px; background: #2d2d44; border-radius: 3px; overflow: hidden;
+    .score-card .score-row {
+      display: flex; flex-direction: column;
+      padding-top: 12px; padding-bottom: 4px;
     }
-    .gottman-fill {
-      height: 100%; border-radius: 3px; transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+    .score-number {
+      font-family: 'Inter', sans-serif;
+      font-size: 81px; font-weight: 600; line-height: 1;
+      letter-spacing: -3.3px; color: #1a1a1a;
     }
-    .gottman-fill.criticism { background: #e17055; }
-    .gottman-fill.contempt { background: #d63031; }
-    .gottman-fill.defensiveness { background: #fdcb6e; }
-    .gottman-fill.stonewalling { background: #6c5ce7; }
+    .score-bar-wrap {
+      margin-top: 4px; height: 6px; border-radius: 99px;
+      background: rgba(0,0,0,0.12);
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%; border-radius: 99px;
+      background: #1a1a1a;
+      transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .score-detail {
+      padding-top: 12px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .score-tag {
+      display: inline-flex; align-items: center;
+      padding: 3px 12px; border-radius: 99px;
+      background: rgba(0,0,0,0.12);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 600; line-height: 18px;
+      color: #2a2a1a;
+      width: fit-content;
+    }
+    .score-explanation {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 400; line-height: 20px;
+      letter-spacing: -0.08px; color: #2a2a1a;
+    }
+
+    /* ── Four Horsemen Section ── */
+    .horsemen-grid { display: flex; flex-direction: column; gap: 8px; }
+
+    .horsemen-card {
+      background: rgba(0,0,0,0.15); border-radius: 20px;
+      padding: 18px 20px;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .horsemen-card .name-row {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .horsemen-card .name {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px; font-weight: 800; line-height: 22px;
+      letter-spacing: -0.23px; color: #ffffff;
+    }
+    .horsemen-card .bars-section {
+      margin-top: 12px; display: flex; gap: 6px;
+    }
+    .horsemen-card .bar-column {
+      flex: 1; display: flex; flex-direction: column; gap: 0;
+    }
+    .horsemen-card .bar-track-wrap {
+      height: 6px; border-radius: 99px;
+      background: rgba(255,255,255,0.15);
+      overflow: hidden;
+    }
+    .horsemen-card .bar-fill {
+      height: 100%; border-radius: 99px;
+      transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .horsemen-card .bar-fill.user { background: #c9f135; }
+    .horsemen-card .bar-fill.other { background: #d4b0f5; }
+    .horsemen-card .bar-label-row {
+      display: flex; align-items: center; gap: 4px;
+      padding-top: 4px;
+    }
+    .horsemen-card .bar-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 400; line-height: 15px;
+      letter-spacing: 0.12px; color: #bbbbbb;
+    }
+    .horsemen-card .bar-score {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 700; line-height: 15px;
+      letter-spacing: 0.12px; color: #efefef;
+    }
 
     /* ── Radar Chart ── */
     .chart-wrapper {
-      background: #151928; border-radius: 20px; padding: 16px;
-      display: flex; justify-content: center;
+      background: rgba(0,0,0,0.15); border-radius: 20px;
+      padding: 20px; display: flex; justify-content: center;
+      margin-bottom: 12px;
     }
-    .chart-wrapper canvas {
-      width: 100%; max-width: 400px; height: auto;
-    }
+    .chart-wrapper canvas { width: 100%; max-width: 340px; height: auto; }
 
     /* ── Toxic Sentences ── */
-    .sentence-list { display: grid; gap: 10px; }
+    .sentence-list { display: flex; flex-direction: column; gap: 8px; }
     .sentence-card {
-      background: #151928; border-radius: 14px; padding: 14px 16px;
-      cursor: pointer; transition: all 0.2s;
+      background: rgba(0,0,0,0.15); border-radius: 20px;
+      padding: 16px 20px; cursor: pointer;
+      transition: background 0.2s;
     }
-    .sentence-card:active { transform: scale(0.98); }
-    .sentence-card .label-tag {
+    .sentence-card:active { background: rgba(0,0,0,0.25); }
+    .sentence-card .sentence-header { display: flex; flex-direction: column; gap: 6px; }
+    .label-tag {
       display: inline-block; font-size: 11px; font-weight: 600;
-      padding: 3px 10px; border-radius: 6px; margin-bottom: 8px;
+      padding: 3px 10px; border-radius: 6px;
+      width: fit-content;
     }
-    .label-tag.emotional-blackmail { background: rgba(214,48,49,0.15); color: #ff7675; }
-    .label-tag.gaslighting { background: rgba(108,92,231,0.15); color: #a29bfe; }
-    .label-tag.belittle { background: rgba(225,112,85,0.15); color: #fab1a0; }
-    .label-tag.deny { background: rgba(253,203,110,0.15); color: #ffeaa7; }
-    .label-tag.blame-shift { background: rgba(0,184,148,0.15); color: #55efc4; }
-    .label-tag.default { background: rgba(178,190,195,0.15); color: #b2bec3; }
+    .label-tag.emotional-blackmail, .label-tag.gaslighting,
+    .label-tag.belittle, .label-tag.deny, .label-tag.blame-shift { background: rgba(201,241,53,0.12); color: #c9f135; }
+    .label-tag.default { background: rgba(255,255,255,0.08); color: #b2bec3; }
 
     .sentence-text {
-      font-size: 14px; color: #dfe6e9; line-height: 1.5;
-      padding: 8px 12px; background: rgba(0,0,0,0.2); border-radius: 8px;
-      margin-bottom: 6px; font-style: italic; border-left: 3px solid #6c5ce7;
+      font-size: 13px; color: #dfe6e9; line-height: 1.5;
+      padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 8px;
+      font-style: italic; border-left: 3px solid;
     }
-    .sentence-text.other { border-left-color: #fd79a8; }
-    .sentence-text.user { border-left-color: #74b9ff; }
+    .sentence-text.other { border-left-color: #d4b0f5; }
+    .sentence-text.user { border-left-color: #c9f135; }
     .sentence-speaker {
-      font-size: 11px; color: #636e72; margin-bottom: 6px;
+      font-size: 11px; color: #636e72; display: flex; align-items: center; gap: 6px;
     }
     .sentence-speaker .dot {
       display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-      margin-right: 4px; vertical-align: middle;
     }
-    .dot.other { background: #fd79a8; }
-    .dot.user { background: #74b9ff; }
+    .dot.other { background: #d4b0f5; }
+    .dot.user { background: #c9f135; }
 
     .sentence-body {
       max-height: 0; overflow: hidden;
@@ -169,44 +199,42 @@
       max-height: 400px; margin-top: 10px;
     }
     .sentence-body .explanation {
-      font-size: 13px; color: #b2bec3; line-height: 1.5;
-      padding: 8px; background: rgba(0,0,0,0.15); border-radius: 8px;
+      font-size: 12px; color: #b2bec3; line-height: 1.5;
+      padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px;
       margin-bottom: 8px;
     }
     .counter-box {
       padding: 10px 12px; border-radius: 8px;
-      background: rgba(108,92,231,0.08); border: 1px solid rgba(108,92,231,0.2);
+      background: rgba(201,241,53,0.06); border: 1px solid rgba(201,241,53,0.15);
     }
     .counter-box .cta-label {
-      font-size: 11px; font-weight: 600; color: #6c5ce7; margin-bottom: 4px;
+      font-size: 11px; font-weight: 600; color: #c9f135; margin-bottom: 4px;
     }
     .counter-box .cta-text {
-      font-size: 13px; color: #dfe6e9; line-height: 1.5;
-    }
-    .expand-hint {
-      text-align: center; font-size: 11px; color: #636e72; margin-top: 8px;
+      font-size: 12px; color: #dfe6e9; line-height: 1.5;
     }
 
     /* ── Summary ── */
     .summary-box {
-      background: #151928; border-radius: 14px; padding: 16px;
-      margin-top: 16px; line-height: 1.7; font-size: 14px; color: #b2bec3;
+      background: rgba(0,0,0,0.15); border-radius: 20px;
+      padding: 16px 20px; margin-top: 8px;
+      font-size: 13px; color: #b2bec3; line-height: 1.7;
     }
-    .summary-box strong { color: #dfe6e9; }
+    .summary-box strong { color: #ffffff; }
 
-    /* ── Disclaimers ── */
+    /* ── Disclaimer ── */
     .disclaimer {
-      margin-top: 24px; padding: 12px; border-radius: 12px;
-      background: rgba(108,92,231,0.05); text-align: center;
+      margin-top: 20px; padding: 12px; border-radius: 12px;
+      background: rgba(201,241,53,0.04); text-align: center;
       font-size: 11px; color: #636e72; line-height: 1.6;
     }
 
     /* ── Animations ── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .fade-up { animation: fadeUp 0.5s ease both; }
+    .fade-up { animation: fadeUp 0.45s ease both; }
 
     /* Telegram Safe Area */
     .tg-safe-area { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
@@ -216,76 +244,56 @@
   <!-- Loader -->
   <div id="loader">
     <div class="spinner"></div>
-    <div class="loader-text">🧬 Decoding...</div>
-    <div class="loader-sub">Loading analysis data...</div>
+    <div class="loader-text">Decoding...</div>
   </div>
 
   <!-- Main Dashboard -->
   <div id="app" class="container tg-safe-area">
-    <!-- Header -->
-    <div class="header fade-up">
-      <h1>🔬 Gas-off · Dashboard</h1>
-      <div class="subtitle">Based on Gottman Four Horsemen × Interpersonal Circumplex Model</div>
-    </div>
 
-    <!-- Toxicity Score -->
+    <!-- Toxicity Score Card -->
     <div id="scoreCard" class="score-card fade-up"></div>
 
-    <!-- Gottman Four Horsemen -->
-    <div class="section-title fade-up">
-      🐎 Four Horsemen <span class="badge">Gottman Theory</span>
+    <!-- Four Horsemen -->
+    <div class="section-title fade-up" style="margin-top:12px">Four Horsemen</div>
+    <div class="section-subtitle fade-up">
+      Behavioral Toxicity Scan: Measuring critical conflict markers based on Gottman's Cascade Model.
     </div>
-    <div id="gottmanGrid" class="gottman-grid"></div>
+    <div id="horsemenGrid" class="horsemen-grid"></div>
 
-    <!-- Circumplex Radar Chart -->
-    <div class="section-title fade-up">
-      🎯 Interpersonal Circumplex <span class="badge">Relationship Map</span>
-    </div>
+    <!-- Circumplex Radar -->
+    <div class="section-title fade-up" style="margin-top:12px">Circumplex Model</div>
     <div class="chart-wrapper fade-up">
-      <canvas id="radarChart" width="400" height="400"></canvas>
+      <canvas id="radarChart" width="340" height="340"></canvas>
     </div>
 
     <!-- Toxic Sentences -->
-    <div class="section-title fade-up">
-      ☣️ Toxic Speech Detector <span class="badge" id="sentenceCount">0 items</span>
-    </div>
+    <div class="section-title fade-up">Toxic Language</div>
+    <div class="section-subtitle fade-up" id="sentenceSubtitle">0 toxic statements detected</div>
     <div id="sentenceList" class="sentence-list"></div>
 
     <!-- Summary -->
     <div id="summaryBox" class="summary-box fade-up"></div>
 
-    <!-- Disclaimers -->
+    <!-- Disclaimer -->
     <div class="disclaimer fade-up">
-      🔒 Your conversation has been fully de-identified and will be destroyed after analysis.<br>
-      For reference only. Not a substitute for professional advice.
+      Your conversation has been de-identified. Analysis results are for reference only and do not replace professional help.
     </div>
   </div>
 
   <script>
-    // ── Telegram WebApp SDK Integration ──
+    // ── Telegram WebApp SDK ──
     const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.expand();
-      tg.ready();
-    }
+    if (tg) { tg.expand(); tg.ready(); }
 
-    // ── Extract Analysis ID from URL ──
+    // ── Config ──
     const analysisId = window.location.pathname.split('/').pop() || 'demo';
     const API_BASE = window.location.origin;
 
-    // ── Color Palette ──
     const COLORS = {
-      user: { fill: 'rgba(116, 185, 255, 0.15)', stroke: 'rgba(116, 185, 255, 0.9)', label: 'You' },
-      other: { fill: 'rgba(253, 121, 168, 0.15)', stroke: 'rgba(253, 121, 168, 0.9)', label: 'Other' },
+      user: { fill: 'rgba(201,241,53,0.15)', stroke: '#c9f135', label: 'You' },
+      other: { fill: 'rgba(212,176,245,0.15)', stroke: '#d4b0f5', label: 'Other' },
       grid: 'rgba(255,255,255,0.06)',
       text: 'rgba(255,255,255,0.35)',
-    };
-
-    const GOTTMAN_LABELS = {
-      criticism: { label: 'Criticism', en: 'Criticism', color: '#e17055' },
-      contempt: { label: 'Contempt', en: 'Contempt', color: '#d63031' },
-      defensiveness: { label: 'Defensiveness', en: 'Defensiveness', color: '#fdcb6e' },
-      stonewalling: { label: 'Stonewalling', en: 'Stonewalling', color: '#6c5ce7' },
     };
 
     // ── Load Data ──
@@ -295,249 +303,189 @@
         if (!res.ok) throw new Error('Not found');
         return await res.json();
       } catch {
-        // Fallback: demo data
         return {
           other_name: 'TA',
           toxicity_score: 72,
           toxicity_direction: 'other_to_self',
-          toxicity_explanation: 'The other person frequently uses criticism and contempt, causing you emotional stress.',
+          toxicity_explanation: 'The other person uses frequent criticism and contempt, causing you emotional stress.',
           gottman: {
             user: { criticism: 15, contempt: 5, defensiveness: 60, stonewalling: 20 },
-            other: { criticism: 68, contempt: 55, defensiveness: 30, stonewalling: 42 }
+            other: { criticism: 68, contempt: 55, defensiveness: 30, stonewalling: 42 },
           },
           circumplex: {
             user: { dominance: -30, arrogance: -40, coldness: -20, hostility: -10, submission: 60, humility: 50, warmth: 40, empathy: 50 },
             other: { dominance: 75, arrogance: 60, coldness: 50, hostility: 55, submission: -40, humility: -50, warmth: -30, empathy: -45 },
           },
           toxic_sentences: [
-            {
-              sentence: 'This is all for your own good',
-              label: 'Emotional Blackmail',
-              explanation: 'Disguising control as care, making it hard to argue back.',
-              original_speaker: 'other',
-              counter_suggestion: '"I know you mean well, but this approach makes me uncomfortable. Let us find a better way to communicate."'
-            },
-            {
-              sentence: 'You are too sensitive',
-              label: 'Gaslighting',
-              explanation: 'Denying the other person\'s feelings, making them doubt their own judgment.',
-              original_speaker: 'other',
-              counter_suggestion: '"My feelings are real. Please don\'t dismiss them. Let\'s talk about what actually happened."'
-            },
-            {
-              sentence: 'Without me, where would you be?',
-              label: 'Emotional Blackmail',
-              explanation: 'Creating a sense of indebtedness by emphasizing one\'s own sacrifices.',
-              original_speaker: 'other',
-              counter_suggestion: '"I appreciate your help, but this relationship should be built on equality, not obligation."'
-            }
+            { sentence: 'This is for your own good', label: 'Emotional Blackmail', explanation: 'Disguising control as care.', original_speaker: 'other', counter_suggestion: 'I appreciate your concern, but this approach makes me uncomfortable.' },
+            { sentence: 'You are too sensitive', label: 'Gaslighting', explanation: 'Denying the other persons feelings.', original_speaker: 'other', counter_suggestion: 'My feelings are valid. Lets talk about what actually happened.' },
           ],
-          summary: 'The other person shows a dominant communication pattern with emotional blackmail and gaslighting. Recommend setting boundaries and seeking professional help if needed.'
+          summary: 'The other person shows a dominant communication pattern with emotional blackmail and gaslighting. Consider setting clear boundaries.',
         };
       }
     }
 
-    // ── Render Score Card ──
+    // ── Score Card ──
     function renderScore(data) {
-      const score = data.toxicity_score;
-      const dir = data.toxicity_direction || 'other_to_self';
-      const expl = data.toxicity_explanation || '';
+      const card = document.getElementById('scoreCard');
+      const score = Math.round(data.toxicity_score);
+      const isSelfHarm = data.toxicity_direction === 'self_to_other';
+      const isMutual = data.toxicity_direction === 'mutual';
 
-      let cls = 'medium';
-      if (score >= 70) cls = 'danger';
-      else if (score <= 35) cls = 'ok';
+      let prefix = '+';
+      if (isSelfHarm) prefix = '-';
+      else if (isMutual) prefix = '';
 
-      let sign = '+', directionLabel = 'Other is harming you';
-      if (dir === 'self_to_other') { sign = '-'; directionLabel = 'You are harming other'; }
-      else if (dir === 'mutual') { sign = '~'; directionLabel = 'Mutual harm'; }
+      let tagText = `${data.other_name} is harming you`;
+      if (isSelfHarm) tagText = `You are harming ${data.other_name}`;
+      else if (isMutual) tagText = 'Mutual toxicity detected';
 
-      document.getElementById('scoreCard').innerHTML = `
-        <div class="label">👤 Relationship with <strong style="color:#fd79a8">${data.other_name}</strong></div>
-        <div class="other-name">${data.other_name}</div>
-        <div class="score-number ${cls}">${sign}${score}<span class="score-unit">%</span></div>
-        <div class="label" style="margin-top:4px">${directionLabel}</div>
-        <div class="score-bar">
-          <div class="score-bar-fill ${cls}" style="width:0%"></div>
+      card.innerHTML = `
+        <div class="label">Toxic Score</div>
+        <div class="score-row">
+          <div class="score-number">${prefix}${score}</div>
         </div>
-        ${expl ? `<div style="font-size:13px;color:#b2bec3;margin-top:12px;line-height:1.6;text-align:left;padding:0 4px">💡 ${expl}</div>` : ''}
+        <div class="score-bar-wrap">
+          <div class="score-bar-fill" style="width:${score}%"></div>
+        </div>
+        <div class="score-detail">
+          <div class="score-tag">${tagText}</div>
+          <div class="score-explanation">${data.toxicity_explanation || ''}</div>
+        </div>
       `;
-      // Animate bar after render
-      requestAnimationFrame(() => {
-        const bar = document.querySelector('.score-bar-fill');
-        if (bar) bar.style.width = score + '%';
-      });
     }
 
-    // ── Render Gottman ──
-    function renderGottman(gottman) {
-      const grid = document.getElementById('gottmanGrid');
+    // ── Four Horsemen ──
+    const HORSEMEN = ['criticism', 'contempt', 'defensiveness', 'stonewalling'];
+    const HORSEMEN_LABELS = {
+      criticism: 'Criticism', contempt: 'Contempt',
+      defensiveness: 'Defensiveness', stonewalling: 'Stonewalling',
+    };
 
-      // gottman = { user: {...}, other: {...} }
-      const userScores = gottman.user || gottman;
-      const otherScores = gottman.other || gottman;
-
-      grid.innerHTML = Object.entries(GOTTMAN_LABELS).map(([key, info]) => {
-        const uVal = userScores[key] || 0;
-        const oVal = otherScores[key] || 0;
+    function renderHorsemen(gottman) {
+      const grid = document.getElementById('horsemenGrid');
+      grid.innerHTML = HORSEMEN.map(key => {
+        const userVal = Math.round(gottman.user?.[key] || 0);
+        const otherVal = Math.round(gottman.other?.[key] || 0);
         return `
-          <div class="gottman-item fade-up">
-            <div class="gottman-header">
-              <span class="gottman-name">${info.label} <span class="en">${info.en}</span></span>
-              <span class="gottman-score" style="color:${info.color}">You ${uVal}% · Other ${oVal}%</span>
+          <div class="horsemen-card fade-up">
+            <div class="name-row">
+              <span class="name">${HORSEMEN_LABELS[key]}</span>
             </div>
-            <div class="gottman-track" style="margin-bottom:4px">
-              <div class="gottman-fill ${key}" style="width:0%;height:6px"></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:#636e72">
-              <span>You</span>
-              <span>Other</span>
+            <div class="bars-section">
+              <div class="bar-column">
+                <div class="bar-track-wrap">
+                  <div class="bar-fill user" style="width:${userVal}%"></div>
+                </div>
+                <div class="bar-label-row">
+                  <span class="bar-label">You</span>
+                  <span class="bar-score">${userVal}%</span>
+                </div>
+              </div>
+              <div class="bar-column">
+                <div class="bar-track-wrap">
+                  <div class="bar-fill other" style="width:${otherVal}%"></div>
+                </div>
+                <div class="bar-label-row">
+                  <span class="bar-label">Other</span>
+                  <span class="bar-score">${otherVal}%</span>
+                </div>
+              </div>
             </div>
           </div>
         `;
       }).join('');
-      // Animate bars — user bar fills to uVal, overlaid with other bar hint
-      requestAnimationFrame(() => {
-        Object.keys(GOTTMAN_LABELS).forEach(key => {
-          const bar = document.querySelector(`.gottman-fill.${key}`);
-          if (bar) {
-            const u = userScores[key] || 0;
-            const o = otherScores[key] || 0;
-            // Show the higher of the two
-            bar.style.width = Math.max(u, o) + '%';
-            // Add a tooltip-like indicator via title
-            bar.title = `You: ${u}% | Other: ${o}%`;
-          }
-        });
-      });
     }
 
-    // ── Render Radar Chart (Interpersonal Circumplex) ──
+    // ── Radar Chart ──
     const AXES = ['dominance', 'arrogance', 'coldness', 'hostility', 'submission', 'humility', 'warmth', 'empathy'];
     const AXIS_LABELS = ['Dominance', 'Arrogance', 'Coldness', 'Hostility', 'Submission', 'Humility', 'Warmth', 'Empathy'];
 
     function renderRadar(data) {
+      if (!data.circumplex) return;
       const canvas = document.getElementById('radarChart');
       const ctx = canvas.getContext('2d');
-      const W = canvas.width, H = canvas.height;
-      const cx = W / 2, cy = H / 2;
-      const radius = Math.min(cx, cy) - 40;
-      const n = AXES.length;
-      const angleStep = (Math.PI * 2) / n;
-      const startAngle = -Math.PI / 2;
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.clientWidth || 340;
+      const H = canvas.clientHeight || 340;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.scale(dpr, dpr);
 
-      function calcPoint(value, r) {
-        const angle = startAngle + (value / 100) * angleStep;
-        // value is -100..100, map to 0..1
-        const norm = (value + 100) / 200;
-        const dist = norm * r;
-        return {
-          x: cx + dist * Math.cos(angle),
-          y: cy + dist * Math.sin(angle),
-          norm
-        };
+      const cx = W / 2, cy = H / 2 - 8, radius = Math.min(cx, cy) * 0.55;
+
+      function pointOnAxis(idx, value, r) {
+        const angle = Math.PI * 2 / AXES.length * idx - Math.PI / 2;
+        const norm = ((value + 100) / 200) * r;
+        return { x: cx + norm * Math.cos(angle), y: cy + norm * Math.sin(angle) };
       }
 
-      // Actually the radial axis is fixed - each axis has -100..100 mapped radially out
-      function pointOnAxis(axisIdx, value, r) {
-        const angle = startAngle + axisIdx * angleStep;
-        const norm = (value + 100) / 200;
-        const dist = norm * r;
-        return { x: cx + dist * Math.cos(angle), y: cy + dist * Math.sin(angle) };
-      }
-
-      function drawPolygon(values, fillColor, strokeColor, r) {
+      function drawPolygon(values, fill, stroke, r) {
         ctx.beginPath();
         values.forEach((v, i) => {
           const p = pointOnAxis(i, v, r);
           i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
         });
         ctx.closePath();
-        ctx.fillStyle = fillColor;
-        ctx.fill();
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
+        ctx.fillStyle = fill; ctx.fill();
+        ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke();
       }
 
-      // Draw background grid
       ctx.clearRect(0, 0, W, H);
 
-      // Grid circles
+      // Grid rings
       for (let ring = 1; ring <= 4; ring++) {
         const r = (radius / 4) * ring;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.strokeStyle = COLORS.grid;
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = COLORS.grid; ctx.lineWidth = 1; ctx.stroke();
       }
 
       // Axis lines & labels
-      ctx.font = '12px -apple-system, "PingFang SC", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       AXES.forEach((_, i) => {
-        const angle = startAngle + i * angleStep;
+        const angle = Math.PI * 2 / AXES.length * i - Math.PI / 2;
         const p = { x: cx + (radius + 20) * Math.cos(angle), y: cy + (radius + 20) * Math.sin(angle) };
-        ctx.fillStyle = COLORS.text;
-        ctx.fillText(AXIS_LABELS[i], p.x, p.y);
-
-        // Tick lines
+        ctx.fillStyle = COLORS.text; ctx.fillText(AXIS_LABELS[i], p.x, p.y);
         const tickEnd = { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(tickEnd.x, tickEnd.y);
-        ctx.strokeStyle = COLORS.grid;
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(tickEnd.x, tickEnd.y);
+        ctx.strokeStyle = COLORS.grid; ctx.lineWidth = 1; ctx.stroke();
       });
 
       // Draw polygons
       const userVals = AXES.map(a => data.circumplex.user[a]);
       const otherVals = AXES.map(a => data.circumplex.other[a]);
-
       drawPolygon(otherVals, COLORS.other.fill, COLORS.other.stroke, radius);
       drawPolygon(userVals, COLORS.user.fill, COLORS.user.stroke, radius);
 
-      // Data points (other)
+      // Data points
       otherVals.forEach((v, i) => {
         const p = pointOnAxis(i, v, radius);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = COLORS.other.stroke;
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS.other.stroke; ctx.fill();
       });
-
-      // Data points (user)
       userVals.forEach((v, i) => {
         const p = pointOnAxis(i, v, radius);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = COLORS.user.stroke;
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS.user.stroke; ctx.fill();
       });
 
       // Legend
       const legendY = H - 10;
-      ctx.font = '11px -apple-system, "PingFang SC", sans-serif';
-      ctx.textBaseline = 'top';
-
+      ctx.font = '10px Inter, sans-serif'; ctx.textBaseline = 'top';
       const legendItems = [
         { color: COLORS.other.stroke, label: COLORS.other.label },
         { color: COLORS.user.stroke, label: COLORS.user.label },
       ];
       let lx = cx - 80;
       legendItems.forEach(item => {
-        ctx.fillStyle = item.color;
-        ctx.fillRect(lx, legendY, 12, 12);
-        ctx.fillStyle = 'rgba(255,255,255,0.7)';
-        ctx.textAlign = 'left';
-        ctx.fillText(item.label, lx + 18, legendY - 1);
-        lx += 120;
+        ctx.fillStyle = item.color; ctx.fillRect(lx, legendY, 10, 10);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.textAlign = 'left';
+        ctx.fillText(item.label, lx + 15, legendY - 1); lx += 100;
       });
     }
 
-    // ── Render Toxic Sentences ──
+    // ── Toxic Sentences ──
     function getLabelClass(label) {
       const l = label.toLowerCase();
       if (l.includes('blackmail')) return 'emotional-blackmail';
@@ -550,30 +498,29 @@
 
     function renderSentences(sentences) {
       const list = document.getElementById('sentenceList');
-      const countEl = document.getElementById('sentenceCount');
-      countEl.textContent = sentences.length + ' items';
+      const sub = document.getElementById('sentenceSubtitle');
+      sub.textContent = `${sentences.length} toxic statement${sentences.length !== 1 ? 's' : ''} detected`;
 
       list.innerHTML = sentences.map((s, idx) => {
         const tagCls = getLabelClass(s.label);
-        const isOther = s.original_speaker === 'other';
+        const isOther = s.original_speaker === 'other' || s.original_speaker === 'Person_A' || s.original_speaker === 'Person_B';
         return `
-          <div class="sentence-card" onclick="this.classList.toggle('expanded')" style="animation-delay:${0.1 * idx}s">
-            <div>
+          <div class="sentence-card fade-up" onclick="this.classList.toggle('expanded')" style="animation-delay:${0.08 * idx}s">
+            <div class="sentence-header">
               <span class="label-tag ${tagCls}">${s.label}</span>
               <div class="sentence-text ${isOther ? 'other' : 'user'}">"${s.sentence}"</div>
               <div class="sentence-speaker">
                 <span class="dot ${isOther ? 'other' : 'user'}"></span>
-                ${isOther ? 'Other: ' + s.original_speaker : 'You: ' + s.original_speaker}
+                ${s.original_speaker}
               </div>
             </div>
             <div class="sentence-body">
-              <div class="explanation">💡 ${s.explanation}</div>
+              <div class="explanation">${s.explanation}</div>
               <div class="counter-box">
-                <div class="cta-label">🛡️ Anti-Toxicity Comeback</div>
+                <div class="cta-label">Suggested Response</div>
                 <div class="cta-text">${s.counter_suggestion}</div>
               </div>
             </div>
-            <div class="expand-hint">👆 Tap to expand suggestion</div>
           </div>
         `;
       }).join('');
@@ -581,9 +528,7 @@
 
     // ── Summary ──
     function renderSummary(summary) {
-      document.getElementById('summaryBox').innerHTML = `
-        <strong>📋 Summary</strong><br>${summary}
-      `;
+      document.getElementById('summaryBox').innerHTML = `<strong>Summary</strong><br>${summary}`;
     }
 
     // ── Init ──
@@ -594,16 +539,13 @@
       document.getElementById('app').classList.add('show');
 
       renderScore(data);
-      renderGottman(data.gottman);
+      renderHorsemen(data.gottman);
       renderRadar(data);
       renderSentences(data.toxic_sentences);
       renderSummary(data.summary);
-    }
 
-    // Handle dark mode for Telegram WebApp
-    if (tg) {
-      tg.setHeaderColor('#0b0e17');
-      tg.setBackgroundColor('#0b0e17');
+      // Telegram theme
+      if (tg) { tg.setHeaderColor('#0b0e17'); tg.setBackgroundColor('#0b0e17'); }
     }
 
     init();
