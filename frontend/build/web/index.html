@@ -16,8 +16,6 @@
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
-
-    /* ── Loading ── */
     #loader {
       position: fixed; inset: 0; z-index: 9999;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -34,21 +32,22 @@
     .loader-text { margin-top: 12px; font-size: 13px; color: #1a1a1a; font-weight: 600; }
 
     /* ── Page Container ── */
-    .container { max-width: 420px; margin: 0 auto; padding: 32px 20px 48px; display: none; }
+    .container { max-width: 420px; margin: 0 auto; padding: 24px 20px 24px; display: none; }
     .container.show { display: block; }
 
     /* ── Section Wrapper ── */
     .section {
       padding-top: 16px;
-      display: flex; flex-direction: column; gap: 12px;
+      display: flex; flex-direction: column;
     }
     .section:first-child { padding-top: 0; }
 
-    /* ── Section Card Base ── */
-    .section-card {
-      border-radius: 24px; padding: 28px 24px 24px;
-      display: flex; flex-direction: column; gap: 8px;
+    /* ── Animations ── */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
     }
+    .anim-slide { animation: slideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
     /* ── Toxic Score Card (lime) ── */
     .score-card {
@@ -78,6 +77,9 @@
     .score-bar-fill {
       height: 100%; border-radius: 99px;
       background: #1a1a1a;
+      width: 0;
+    }
+    .score-bar-fill.anim {
       transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .score-detail {
@@ -115,7 +117,6 @@
       letter-spacing: -0.08px; color: rgba(255,255,255,0.55);
     }
 
-    /* Individual horseman item */
     .horsemen-item {
       background: rgba(0,0,0,0.15); border-radius: 20px;
       padding: 18px 20px;
@@ -142,10 +143,13 @@
     }
     .horsemen-item .bar-fill {
       height: 100%; border-radius: 99px;
+      width: 0;
+    }
+    .horsemen-item .bar-fill.user { background: #c9f135; }
+    .horsemen-item .bar-fill.other { background: #d4b0f5; }
+    .horsemen-item .bar-fill.anim {
       transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .bar-fill.user { background: #c9f135; }
-    .bar-fill.other { background: #d4b0f5; }
     .horsemen-item .bar-label-row {
       display: flex; align-items: center; gap: 4px;
       padding-top: 4px;
@@ -169,7 +173,7 @@
     }
     .circumplex-card .section-title { color: #ffffff; }
     .chart-wrapper {
-      display: flex; flex-direction: column; align-items: center;
+      display: flex; justify-content: center;
     }
     .chart-wrapper canvas { width: 100%; max-width: 340px; height: auto; }
     .chart-legend {
@@ -189,6 +193,20 @@
     .legend-dot.other { background: #d4b0f5; }
 
     /* ── Toxic Language Card (white) ── */
+    .toxic-section {
+      padding-top: 20px;
+      display: none; /* hidden by default, shown when data has sentences */
+      flex-direction: column;
+    }
+    .toxic-section-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 18px; font-weight: 800; line-height: 27px;
+      letter-spacing: -0.44px; color: #1a1a1a;
+      padding-bottom: 8px;
+    }
+    .toxic-list {
+      display: flex; flex-direction: column; gap: 8px;
+    }
     .toxic-card {
       background: #ffffff; border-radius: 24px;
       padding: 22px 20px 22px;
@@ -208,7 +226,13 @@
       font-size: 14px; font-weight: 400; line-height: 1.7;
       color: #1a1a1a;
       font-style: italic;
-      border-left: 3px solid #e0e0e0;
+      border-left: 3px solid #d4b0f5; /* default: other */
+    }
+    .toxic-card .toxic-quote.user-quote {
+      border-left-color: #c9f135;
+    }
+    .toxic-card .toxic-quote.other-quote {
+      border-left-color: #d4b0f5;
     }
     .toxic-card .toxic-meta-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -224,8 +248,6 @@
       transition: transform 0.3s ease;
     }
     .toxic-card.expanded .expand-icon { transform: rotate(180deg); }
-
-    /* Expand body */
     .toxic-expand-body {
       max-height: 0; overflow: hidden;
       transition: max-height 0.4s ease, margin 0.3s ease;
@@ -234,8 +256,6 @@
     .toxic-card.expanded .toxic-expand-body {
       max-height: 600px; margin-top: 0;
     }
-
-    /* Explanation (dark card inside white) */
     .toxic-explanation {
       background: rgba(0,0,0,0.15); border-radius: 20px;
       padding: 18px 20px;
@@ -243,8 +263,6 @@
       font-size: 12px; font-weight: 400; line-height: 20px;
       color: #1a1a1a;
     }
-
-    /* Suggestion (lime card for user, purple for other) */
     .toxic-suggestion {
       border-radius: 20px; padding: 18px 20px;
       display: flex; flex-direction: column; gap: 0;
@@ -260,26 +278,21 @@
       color: #1a1a1a;
     }
     .copy-btn {
-      width: 20px; height: 20px; cursor: pointer;
+      width: 24px; height: 24px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       border: none; background: transparent;
       opacity: 0.7; transition: opacity 0.2s;
+      padding: 2px;
     }
     .copy-btn:hover, .copy-btn:active { opacity: 1; }
     .copy-btn svg { width: 16px; height: 16px; }
-    .copy-tooltip {
-      font-family: 'Inter', sans-serif;
-      font-size: 10px; color: #1a1a1a; opacity: 0;
-      transition: opacity 0.2s; white-space: nowrap;
-    }
-    .copy-tooltip.show { opacity: 1; }
     .toxic-suggestion .suggestion-text {
       font-family: 'Inter', sans-serif;
       font-size: 12px; font-weight: 400; line-height: 20px;
       color: #2a2a1a;
     }
 
-    /* ── Summary Card (near black) ── */
+    /* ── Summary Card ── */
     .summary-card {
       background: #1a1a1a; border-radius: 24px;
       padding: 24px 22px 24px;
@@ -315,14 +328,6 @@
       color: rgba(0,0,0,0.45);
     }
 
-    /* ── Animations ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .fade-up { animation: fadeUp 0.45s ease both; }
-
-    /* Telegram Safe Area */
     .tg-safe-area { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
   </style>
 </head>
@@ -335,13 +340,13 @@
   <div id="app" class="container tg-safe-area">
 
     <!-- 1. Toxic Score -->
-    <div class="section fade-up">
-      <div id="scoreCard" class="score-card"></div>
+    <div class="section">
+      <div id="scoreCard" class="score-card anim-slide"></div>
     </div>
 
     <!-- 2. Four Horsemen -->
-    <div class="section fade-up">
-      <div class="horsemen-card-outer">
+    <div class="section">
+      <div class="horsemen-card-outer anim-slide" style="animation-delay:0.1s">
         <div class="section-title">Four Horsemen</div>
         <div class="section-subtitle">Behavioral Toxicity Scan: Measuring critical conflict markers based on Gottman's Cascade Model.</div>
         <div id="horsemenGrid" style="display:flex;flex-direction:column;gap:10px;padding-top:14px"></div>
@@ -349,29 +354,29 @@
     </div>
 
     <!-- 3. Circumplex -->
-    <div class="section fade-up">
-      <div class="circumplex-card">
+    <div class="section">
+      <div class="circumplex-card anim-slide" style="animation-delay:0.2s">
         <div class="section-title">Relationship Map</div>
         <div class="chart-wrapper">
-          <canvas id="radarChart" width="340" height="260"></canvas>
+          <canvas id="radarChart" width="340" height="300"></canvas>
         </div>
         <div class="chart-legend" id="chartLegend"></div>
       </div>
     </div>
 
-    <!-- 4. Toxic Speech Detector -->
-    <div class="section fade-up">
-      <div class="section-title" style="color:#1a1a1a;padding-bottom:14px">Toxic Speech Detector</div>
-      <div id="sentenceList" style="display:flex;flex-direction:column;gap:8px"></div>
+    <!-- 4. Toxic Speech Detector (hidden if no sentences) -->
+    <div class="toxic-section" id="toxicSection">
+      <div class="toxic-section-title">Toxic Speech Detector</div>
+      <div class="toxic-list" id="sentenceList"></div>
     </div>
 
     <!-- 5. Summary -->
-    <div class="section fade-up">
-      <div id="summaryBox" class="summary-card"></div>
+    <div class="section">
+      <div id="summaryBox" class="summary-card anim-slide" style="animation-delay:0.3s"></div>
     </div>
 
     <!-- 6. Disclaimer -->
-    <div class="disclaimer-section fade-up">
+    <div class="disclaimer-section anim-slide" style="animation-delay:0.4s">
       <div class="disclaimer-text">Results are for entertainment and informational purposes only. This analysis does not constitute professional psychological advice, diagnosis, or treatment. Always seek the advice of a qualified mental health professional.</div>
       <div class="disclaimer-row">Your conversation has been fully de-identified and will be destroyed after analysis.</div>
     </div>
@@ -386,9 +391,9 @@
     const API_BASE = window.location.origin;
 
     const COLORS = {
-      user: { fill: 'rgba(201,241,53,0.15)', stroke: '#c9f135', label: 'You' },
-      other: { fill: 'rgba(212,176,245,0.15)', stroke: '#d4b0f5', label: 'Other' },
-      grid: 'rgba(255,255,255,0.1)',
+      user: { fill: 'rgba(201,241,53,0.18)', stroke: '#c9f135', label: 'You' },
+      other: { fill: 'rgba(212,176,245,0.18)', stroke: '#d4b0f5', label: 'Other' },
+      grid: 'rgba(255,255,255,0.15)',
       text: 'rgba(255,255,255,0.6)',
     };
 
@@ -413,11 +418,24 @@
           },
           toxic_sentences: [
             { sentence: 'I had a group work with him last semester and I had to develop his part in the documentation.', label: '# Complaint about third party', explanation: 'Denying the other person\'s feelings, making them doubt their own judgment.', original_speaker: 'other', counter_suggestion: 'Iris expresses frustration about past group work and hints at dissatisfaction, but the conversation remains mostly constructive and supportive.' },
-            { sentence: 'I had a group work with him last semester and I had to develop his part in the documentation.', label: '# Complaint about third party', explanation: 'Denying the other person\'s feelings, making them doubt their own judgment.', original_speaker: 'other', counter_suggestion: 'Iris expresses frustration about past group work and hints at dissatisfaction, but the conversation remains mostly constructive and supportive.' },
+            { sentence: 'I had a group work with him last semester and I had to develop his part in the documentation.', label: '# Complaint about third party', explanation: 'Denying the other person\'s feelings, making them doubt their own judgment.', original_speaker: 'you', counter_suggestion: 'Iris expresses frustration about past group work and hints at dissatisfaction, but the conversation remains mostly constructive and supportive.' },
           ],
           summary: 'The conversation is generally positive and collaborative. Iris expresses some concerns but the communication remains constructive. Both parties show willingness to resolve issues together.',
         };
       }
+    }
+
+    // ── Count-up animation for a DOM element ──
+    function animateCount(el, from, to, duration, prefix) {
+      const start = performance.now();
+      function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out
+        const current = Math.round(from + (to - from) * eased);
+        el.textContent = prefix + current;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
     }
 
     // ── Score Card ──
@@ -432,15 +450,24 @@
       let tagText = `${data.other_name} is harming you`;
       if (isSelfHarm) tagText = `You are harming ${data.other_name}`;
       else if (isMutual) tagText = 'Mutual toxicity detected';
+
       card.innerHTML = `
         <div class="label">Toxic Score</div>
-        <div class="score-row"><div class="score-number">${prefix}${score}</div></div>
-        <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${score}%"></div></div>
+        <div class="score-row"><div class="score-number" id="scoreNum">${prefix}0</div></div>
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="scoreBar"></div></div>
         <div class="score-detail">
           <div class="score-tag">${tagText}</div>
           <div class="score-explanation">${data.toxicity_explanation || ''}</div>
         </div>
       `;
+
+      // Animate score number counting up
+      setTimeout(() => {
+        const numEl = document.getElementById('scoreNum');
+        if (numEl) animateCount(numEl, 0, score, 800, prefix);
+        const bar = document.getElementById('scoreBar');
+        if (bar) { requestAnimationFrame(() => { bar.classList.add('anim'); bar.style.width = score + '%'; }); }
+      }, 200);
     }
 
     // ── Four Horsemen ──
@@ -449,28 +476,66 @@
 
     function renderHorsemen(gottman) {
       const grid = document.getElementById('horsemenGrid');
-      grid.innerHTML = HORSEMEN.map(key => {
+      grid.innerHTML = HORSEMEN.map((key, idx) => {
         const u = Math.round(gottman.user?.[key] || 0);
         const o = Math.round(gottman.other?.[key] || 0);
-        return `<div class="horsemen-item">
+        return `<div class="horsemen-item anim-slide" style="animation-delay:${0.15 + idx*0.06}s">
           <div class="name-row"><span class="name">${HORSEMEN_LABELS[key]}</span></div>
           <div class="bars-section">
             <div class="bar-column">
-              <div class="bar-track-wrap"><div class="bar-fill user" style="width:${u}%"></div></div>
-              <div class="bar-label-row"><span class="bar-label">You</span><span class="bar-score">${u}%</span></div>
+              <div class="bar-track-wrap"><div class="bar-fill user" data-target="${u}"></div></div>
+              <div class="bar-label-row"><span class="bar-label">You</span><span class="bar-score" data-target="${u}">0%</span></div>
             </div>
             <div class="bar-column">
-              <div class="bar-track-wrap"><div class="bar-fill other" style="width:${o}%"></div></div>
-              <div class="bar-label-row"><span class="bar-label">Other</span><span class="bar-score">${o}%</span></div>
+              <div class="bar-track-wrap"><div class="bar-fill other" data-target="${o}"></div></div>
+              <div class="bar-label-row"><span class="bar-label">Other</span><span class="bar-score" data-target="${o}">0%</span></div>
             </div>
           </div>
         </div>`;
       }).join('');
+
+      // Animate horsemen bars + scores after render
+      setTimeout(() => {
+        grid.querySelectorAll('.bar-fill').forEach(bar => {
+          const target = parseInt(bar.dataset.target);
+          requestAnimationFrame(() => { bar.classList.add('anim'); bar.style.width = target + '%'; });
+        });
+        grid.querySelectorAll('.bar-score').forEach(el => {
+          const target = parseInt(el.dataset.target);
+          if (target) animateCount(el, 0, target, 700, '');
+        });
+      }, 300);
     }
 
-    // ── Radar Chart ──
+    // ── Radar Chart with octagonal rings + expand animation ──
     const AXES = ['dominance','arrogance','coldness','hostility','submission','humility','warmth','empathy'];
     const AXIS_LABELS = ['Dominance','Arrogance','Coldness','Hostility','Submission','Humility','Warmth','Empathy'];
+
+    function drawOctagon(ctx, cx, cy, r) {
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const angle = Math.PI*2 / 8 * i - Math.PI/2;
+        const x = cx + r * Math.cos(angle);
+        const y = cy + r * Math.sin(angle);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+    }
+
+    function pointOnAxis(idx, value, r, cx, cy) {
+      const angle = Math.PI*2 / AXES.length * idx - Math.PI/2;
+      const norm = ((value + 100) / 200) * r;
+      return { x: cx + norm*Math.cos(angle), y: cy + norm*Math.sin(angle) };
+    }
+
+    function drawDataPolygon(ctx, values, fill, stroke, r, cx, cy) {
+      ctx.beginPath();
+      values.forEach((v,i) => {
+        const p = pointOnAxis(i, v, r, cx, cy);
+        i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y);
+      });
+      ctx.closePath(); ctx.fillStyle=fill; ctx.fill(); ctx.strokeStyle=stroke; ctx.lineWidth=2; ctx.stroke();
+    }
 
     function renderRadar(data) {
       if (!data.circumplex) return;
@@ -478,45 +543,85 @@
       const ctx = canvas.getContext('2d');
       const dpr = window.devicePixelRatio || 1;
       const W = canvas.clientWidth || 340;
-      const H = canvas.clientHeight || 260;
+      const H = 300;
       canvas.width = W * dpr;
       canvas.height = H * dpr;
       ctx.scale(dpr, dpr);
-      const cx = W/2, cy = H/2 - 10, radius = Math.min(cx, cy) * 0.5;
+      const cx = W/2, cy = H/2 - 5;
+      const radius = Math.min(cx, cy) * 0.62;
 
-      function pointOnAxis(idx, value, r) {
-        const angle = Math.PI*2 / AXES.length * idx - Math.PI/2;
-        const norm = ((value + 100) / 200) * r;
-        return { x: cx + norm*Math.cos(angle), y: cy + norm*Math.sin(angle) };
-      }
-      function drawPolygon(values, fill, stroke, r) {
-        ctx.beginPath();
-        values.forEach((v,i) => { const p = pointOnAxis(i,v,r); i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y); });
-        ctx.closePath(); ctx.fillStyle=fill; ctx.fill(); ctx.strokeStyle=stroke; ctx.lineWidth=2; ctx.stroke();
-      }
-      ctx.clearRect(0,0,W,H);
-      for (let ring=1; ring<=4; ring++) {
-        const r = (radius/4)*ring;
-        ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-        ctx.strokeStyle=COLORS.grid; ctx.lineWidth=1; ctx.stroke();
-      }
-      ctx.font = '10px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      AXES.forEach((_,i)=>{
-        const angle = Math.PI*2/AXES.length*i - Math.PI/2;
-        const p={x:cx+(radius+20)*Math.cos(angle), y:cy+(radius+20)*Math.sin(angle)};
-        ctx.fillStyle=COLORS.text; ctx.fillText(AXIS_LABELS[i],p.x,p.y);
-        const te={x:cx+radius*Math.cos(angle), y:cy+radius*Math.sin(angle)};
-        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(te.x,te.y);
-        ctx.strokeStyle=COLORS.grid; ctx.lineWidth=1; ctx.stroke();
-      });
-      const userVals=AXES.map(a=>data.circumplex.user[a]);
-      const otherVals=AXES.map(a=>data.circumplex.other[a]);
-      drawPolygon(otherVals,COLORS.other.fill,COLORS.other.stroke,radius);
-      drawPolygon(userVals,COLORS.user.fill,COLORS.user.stroke,radius);
-      otherVals.forEach((v,i)=>{const p=pointOnAxis(i,v,radius);ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fillStyle=COLORS.other.stroke;ctx.fill();});
-      userVals.forEach((v,i)=>{const p=pointOnAxis(i,v,radius);ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fillStyle=COLORS.user.stroke;ctx.fill();});
+      const userVals = AXES.map(a => data.circumplex.user[a]);
+      const otherVals = AXES.map(a => data.circumplex.other[a]);
 
-      // Render legend via DOM
+      // Animation state
+      let animProgress = 0;
+      const animDuration = 800;
+      const animStart = performance.now();
+
+      function drawFrame(progress) {
+        ctx.clearRect(0, 0, W, H);
+
+        // Octagonal rings (4 levels at 25%, 50%, 75%, 100%)
+        for (let ring = 1; ring <= 4; ring++) {
+          const r = (radius / 4) * ring * progress;
+          drawOctagon(ctx, cx, cy, r);
+          ctx.strokeStyle = COLORS.grid;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+
+        // Axis lines & labels
+        if (progress > 0.3) {
+          const labelAlpha = Math.min((progress - 0.3) / 0.7, 1);
+          ctx.font = '10px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+          AXES.forEach((_, i) => {
+            const angle = Math.PI*2 / AXES.length * i - Math.PI/2;
+            const p = { x: cx + (radius + 22) * Math.cos(angle), y: cy + (radius + 22) * Math.sin(angle) };
+            ctx.fillStyle = `rgba(255,255,255,${0.6 * labelAlpha})`;
+            ctx.fillText(AXIS_LABELS[i], p.x, p.y);
+            const te = { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(te.x, te.y);
+            ctx.strokeStyle = `rgba(255,255,255,${0.15 * labelAlpha})`;
+            ctx.lineWidth = 1; ctx.stroke();
+          });
+        }
+
+        // Data polygons expand from center
+        if (progress > 0.4) {
+          const dataProgress = Math.min((progress - 0.4) / 0.6, 1);
+          // Ease out
+          const ep = 1 - Math.pow(1 - dataProgress, 3);
+          const currentRadius = radius * ep;
+          drawDataPolygon(ctx, otherVals, COLORS.other.fill, COLORS.other.stroke, currentRadius, cx, cy);
+          drawDataPolygon(ctx, userVals, COLORS.user.fill, COLORS.user.stroke, currentRadius, cx, cy);
+
+          // Data points
+          otherVals.forEach((v, i) => {
+            const p = pointOnAxis(i, v, currentRadius, cx, cy);
+            ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2);
+            ctx.fillStyle = COLORS.other.stroke; ctx.fill();
+          });
+          userVals.forEach((v, i) => {
+            const p = pointOnAxis(i, v, currentRadius, cx, cy);
+            ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2);
+            ctx.fillStyle = COLORS.user.stroke; ctx.fill();
+          });
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        }
+      }
+
+      function tick(now) {
+        const elapsed = now - animStart;
+        animProgress = Math.min(elapsed / animDuration, 1);
+        drawFrame(animProgress);
+      }
+
+      requestAnimationFrame(tick);
+
+      // Legend
       document.getElementById('chartLegend').innerHTML = `
         <div class="legend-item"><div class="legend-dot user"></div>You</div>
         <div class="legend-item"><div class="legend-dot other"></div>Other</div>
@@ -525,17 +630,29 @@
 
     // ── Toxic Sentences ──
     function renderSentences(sentences) {
+      const section = document.getElementById('toxicSection');
       const list = document.getElementById('sentenceList');
+
+      if (!sentences || sentences.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+      section.style.display = 'flex';
+
       list.innerHTML = sentences.map((s, idx) => {
+        const isUser = s.original_speaker === 'user' || s.original_speaker === 'you';
         const isOther = s.original_speaker === 'other' || s.original_speaker === 'Person_A' || s.original_speaker === 'Person_B';
-        const suggestionClass = isOther ? 'other' : 'user';
+        const quoteClass = isUser ? 'user-quote' : 'other-quote';
+        const suggestionClass = isUser ? 'user' : 'other';
+        const speaker = isUser ? 'You' : 'Other';
+
         return `
-          <div class="toxic-card fade-up" style="animation-delay:${0.08*idx}s" onclick="this.classList.toggle('expanded')">
+          <div class="toxic-card anim-slide" style="animation-delay:${0.25 + idx*0.08}s" onclick="this.classList.toggle('expanded')">
             <div class="toxic-label">${s.label}</div>
             <div class="toxic-quote-wrap">
-              <div class="toxic-quote">"${s.sentence}"</div>
+              <div class="toxic-quote ${quoteClass}">"${s.sentence}"</div>
               <div class="toxic-meta-row">
-                <span class="toxic-speaker">${isOther ? 'Other' : 'You'}</span>
+                <span class="toxic-speaker">${speaker}</span>
                 <span class="expand-icon">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="#151515" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </span>
