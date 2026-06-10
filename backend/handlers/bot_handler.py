@@ -382,6 +382,13 @@ def telegram_webhook():
         is_first = chat_id not in _buffers
         if is_first:
             _buffers[chat_id] = {"entries": [], "timer": None}
+            free_left = remaining_free(user_id)
+            trial = ""
+            if free_left > 0:
+                trial = f" ({free_left} free trial left)"
+            # Send immediately before any heavy operations
+            _telegram_send(chat_id,
+                f"🔵 Aggregating messages...{trial}")
         buf = _buffers[chat_id]
         buf["entries"].append({"text": msg.text, "speaker": speaker, "name": name})
         buf["user_id"] = user_id
@@ -391,15 +398,6 @@ def telegram_webhook():
         timer.daemon = True
         timer.start()
         buf["timer"] = timer
-
-    if is_first:
-        free_left = remaining_free(user_id)
-        trial = ""
-        if free_left > 0:
-            trial = f" ({free_left} free trial left)"
-        _telegram_send(chat_id,
-            f"🔵 Receiving messages... Forward more{trial} "
-            "(waits 2s of silence before analyzing)")
 
     logger.info("Buffered for chat=%s user=%s (total %d)", chat_id, user_id, len(buf["entries"]))
     return jsonify({"ok": True, "status": "buffered"})

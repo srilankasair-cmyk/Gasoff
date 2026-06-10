@@ -61,49 +61,6 @@ _CN_PLATE_PATTERN = re.compile(
     r"(?<!\w)[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤川青藏琼宁][A-Z][A-Z0-9]{4,6}(?!\w)"
 )
 
-# ── Conversation label: [You: John] or [Other: 李明] ──
-_CONVERSATION_LABEL_PATTERN = re.compile(
-    r"\[(?:You|Other):\s+[^\]]+\]"
-)
-
-# ── Names ──
-# English title + name: Mr John Smith, Dr. Alice, Prof Bob, etc.
-_EN_TITLE_NAME_PATTERN = re.compile(
-    r"(?<!\w)(?:Mr\.?|Mrs\.?|Ms\.?|Miss|Dr\.?|Prof\.?|Sir|Madam|Lord|Lady)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?(?!\w)"
-)
-# Chinese title + name: 张先生, 李女士, 王老师, 刘医生, etc.
-_CN_TITLE_NAME_PATTERN = re.compile(
-    r"(?<![一-鿿])[一-鿿]{1,4}(?:先生|女士|小姐|老师|医生|教授|大夫|经理|主任|局长|书记|处长|科长|校长|院长|律师|会计)"
-)
-# Common Chinese surnames (top 100) + 1-2 char given name
-# Only matches when name is isolated (surrounded by non-Chinese chars)
-_CN_COMMON_SURNAMES = (
-    r"[李王张刘陈杨赵黄周吴徐孙马胡朱郭何罗高林郑梁谢唐许冯宋韩邓彭曹曾萧田董潘袁"
-    r"蔡蒋余于杜叶程魏苏吕丁任卢姚沈钟姜崔谭陆汪范金石廖贾夏韦付方白邹孟熊秦邱江"
-    r"尹薛闫段雷侯龙史陶黎贺顾毛郝龚邵万钱严覃武戴莫孔向汤赖]"
-)
-_CN_NAME_PATTERN = re.compile(
-    rf"(?<![一-鿿]){_CN_COMMON_SURNAMES}[一-鿿]{{1,2}}(?![一-鿿])"
-)
-# Common English first names (standalone, capitalized mid-text)
-_EN_COMMON_NAMES = (
-    r"John|Mary|James|Patricia|Robert|Jennifer|Michael|Linda|David|Elizabeth|"
-    r"William|Barbara|Richard|Susan|Joseph|Jessica|Thomas|Sarah|Christopher|Karen|"
-    r"Daniel|Lisa|Matthew|Nancy|Anthony|Betty|Mark|Margaret|Donald|Sandra|"
-    r"Steven|Ashley|Paul|Kimberly|Andrew|Emily|Joshua|Donna|Kenneth|Michelle|"
-    r"Kevin|Carol|Brian|Amanda|George|Dorothy|Timothy|Melissa|Ronald|Deborah|"
-    r"Jason|Stephanie|Edward|Rebecca|Jeffrey|Sharon|Ryan|Laura|Jacob|Cynthia|"
-    r"Gary|Kathleen|Nicholas|Amy|Eric|Shirley|Stephen|Angela|Jonathan|Helen|"
-    r"Larry|Anna|Justin|Brenda|Scott|Pamela|Brandon|Nicole|Frank|Emma|"
-    r"Benjamin|Samantha|Gregory|Katherine|Samuel|Christine|Raymond|Debra|"
-    r"Alexander|Rachel|Patrick|Carolyn|Jack|Janet|Dennis|Catherine|Jerry|Maria|"
-    r"Tyler|Heather|Aaron|Diane|Jose|Alice|Adam|Julie|Nathan|Victoria|"
-    r"Henry|Grace|Zachary|Lauren|Peter|Kelly|Kyle|Nicole|Ethan|Jacqueline"
-)
-_EN_NAME_PATTERN = re.compile(
-    rf"\b(?:{_EN_COMMON_NAMES})\b"
-)
-
 # ── Addresses ──
 # English street addresses
 _EN_ADDRESS_PATTERN = re.compile(
@@ -144,7 +101,6 @@ _NAME_PATTERN = re.compile(r"@\w+")
 # Ordered list — run in priority order (most specific first)
 # ═══════════════════════════════════════════════════════════════════════
 _PATTERNS: list[Tuple[re.Pattern, str]] = [
-    (_CONVERSATION_LABEL_PATTERN, "name"),
     (_URL_PATTERN, "url"),
     (_IP_PATTERN, "ip"),
     (_EMAIL_PATTERN, "email"),
@@ -156,10 +112,6 @@ _PATTERNS: list[Tuple[re.Pattern, str]] = [
     (_CN_BANK_CARD_PATTERN, "bank_card"),
     (_CN_ID_PATTERN, "id_card"),
     (_CN_PLATE_PATTERN, "plate"),
-    (_EN_TITLE_NAME_PATTERN, "name"),
-    (_CN_TITLE_NAME_PATTERN, "name"),
-    (_CN_NAME_PATTERN, "name"),
-    (_EN_NAME_PATTERN, "name"),
     (_EN_ADDRESS_PATTERN, "address"),
     (_CN_ADDRESS_PATTERN, "address"),
     (_PO_BOX_PATTERN, "address"),
