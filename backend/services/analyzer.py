@@ -68,13 +68,16 @@ _ANALYSIS_SYSTEM_PROMPT = (
     '      "submission": -100_100, "humility": -100_100, '
     '"warmth": -100_100, "empathy": -100_100 }\n'
     "  },\n"
-    '  "toxic_sentences": [{\n'
-    '    "sentence": "exact toxic sentence",\n'
-    '    "label": "English label e.g. Emotional Blackmail",\n'
-    '    "explanation": "why this is toxic in English",\n'
-    '    "original_speaker": "user | other | Person_A | Person_B",\n'
-    '    "counter_suggestion": "anti-PUA phrase in English"\n'
-    "  }],\n"
+    '  "toxic_sentences": [\n'
+    '    // EXHAUSTIVE: list EVERY toxic sentence found. No cherry-picking. All of them.\n'
+    '    {\n'
+    '      "sentence": "exact toxic sentence",\n'
+    '      "label": "English label e.g. Emotional Blackmail",\n'
+    '      "explanation": "why this is toxic in English",\n'
+    '      "original_speaker": "user | other | Person_A | Person_B",\n'
+    '      "counter_suggestion": "anti-PUA phrase in English"\n'
+    "    }\n"
+    "  ],\n"
     '  "summary": "brief analysis in English, max 3 sentences",\n'
     '  "gottman_explanations": {\n'
     '    "criticism": {\n'
@@ -127,8 +130,16 @@ _ANALYSIS_SYSTEM_PROMPT = (
     "  - Use modern, relatable English. Write like a sharp therapist who genuinely cares.\n"
     "  - Be empathetic toward the victim. Call out the aggressor directly.\n"
     "\n"
+    "CRITICAL — toxic_sentences: You MUST exhaustively list EVERY toxic or manipulative sentence "
+    "in the conversation. Do not cherry-pick or limit to a few examples — be thorough and complete. "
+    "If there are 10 toxic sentences, list all 10. If there are 20, list all 20. "
+    "Each toxic_sentence must include: the exact sentence, a descriptive label, "
+    "a 1-sentence explanation of why it's toxic, the original speaker, and a practical counter-suggestion.\n"
+    "\n"
     "Use English labels for toxic sentences: Emotional Blackmail, Gaslighting, Belittling, "
-    "Denial, Blame Shifting, Silent Treatment, Emotional Coercion etc.\n"
+    "Denial, Blame Shifting, Silent Treatment, Emotional Coercion, Guilt Tripping, "
+    "Threat, Humiliation, Dismissiveness, Sarcasm, Name Calling, Love Withdrawal, "
+    "Victim Reversal, Minimization, Trivialization, Isolation, Control etc.\n"
     "Counter-suggestions should be practical, empowering phrases in English. All output must be in English.\n"
 )
 
