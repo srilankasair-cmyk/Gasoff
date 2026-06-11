@@ -87,11 +87,19 @@ class GottmanScores(BaseModel):
     stonewalling: float = Field(..., ge=0, le=100)
 
 
+class HorsemenDetail(BaseModel):
+    """AI-generated detail for a single horseman: meaning, evidence, verdict, counter."""
+    colloquial_meaning: str = ""
+    captured_quote: str = ""
+    verdict: str = ""
+    counter_strategy: str = ""
+
+
 class GottmanExplanations(BaseModel):
-    criticism: Optional[str] = None
-    contempt: Optional[str] = None
-    defensiveness: Optional[str] = None
-    stonewalling: Optional[str] = None
+    criticism: Optional[HorsemenDetail] = None
+    contempt: Optional[HorsemenDetail] = None
+    defensiveness: Optional[HorsemenDetail] = None
+    stonewalling: Optional[HorsemenDetail] = None
 
 
 class GottmanData(BaseModel):

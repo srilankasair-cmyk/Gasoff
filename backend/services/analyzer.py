@@ -16,6 +16,7 @@ from backend.models.schemas import (
     GottmanScores,
     GottmanExplanations,
     GottmanData,
+    HorsemenDetail,
     ToxicSentence,
 )
 
@@ -33,7 +34,6 @@ _ANALYSIS_SYSTEM_PROMPT = (
     '  - "other_name" = the other person\'s name\n'
     '  - "toxicity_direction" = "other_to_self" if the other person hurts the user, '
     '"self_to_other" if the user hurts the other\n'
-    '  - "toxicity_explanation" = 1-2 sentences in English explaining who is hurting whom\n'
     '  - gottman_user = the user\'s own Four Horsemen scores\n'
     '  - gottman_other = the other person\'s Four Horsemen scores\n'
     '  - "original_speaker" = "user" or "other"\n'
@@ -41,7 +41,6 @@ _ANALYSIS_SYSTEM_PROMPT = (
     'Mode B — Both people are third parties (only [Other: ...] messages):\n'
     '  - "other_name" = "Both parties"\n'
     '  - "toxicity_direction" = "mutual"\n'
-    '  - "toxicity_explanation" = explanation of mutual toxicity in English\n'
     '  - gottman_user = first person\'s scores, gottman_other = second person\'s scores\n'
     '  - "original_speaker" = "Person_A" or "Person_B"\n'
     "\n"
@@ -78,27 +77,58 @@ _ANALYSIS_SYSTEM_PROMPT = (
     "  }],\n"
     '  "summary": "brief analysis in English, max 3 sentences",\n'
     '  "gottman_explanations": {\n'
-    '    "criticism": "explain what this criticism score means for this specific relationship, citing concrete evidence from the conversation",\n'
-    '    "contempt": "explain what this contempt score means, why it matters (Gottman found contempt is the #1 predictor of divorce), with evidence from the conversation",\n'
-    '    "defensiveness": "explain what this defensiveness score means for this specific relationship, with evidence from the conversation",\n'
-    '    "stonewalling": "explain what this stonewalling score means for this specific relationship, with evidence from the conversation"\n'
+    '    "criticism": {\n'
+    '      "colloquial_meaning": "explain what this score means in plain, relatable English — no academic jargon",\n'
+    '      "captured_quote": "exact sentence from the conversation that best illustrates this pattern",\n'
+    '      "verdict": "sharp, empathetic, wake-up-call diagnosis. Lock onto the specific chat evidence. '
+    'Use modern relatable language. Call out manipulation patterns directly.",\n'
+    '      "counter_strategy": "practical one-sentence response script the user can actually use"\n'
+    "    },\n"
+    '    "contempt": { ... same structure ... },\n'
+    '    "defensiveness": { ... same structure ... },\n'
+    '    "stonewalling": { ... same structure ... }\n'
     "  },\n"
-    '  "circumplex_summary": "interpret the circumplex radar chart data (dominance, warmth, hostility patterns) into 2-3 sentences describing the overall relationship dynamic, citing specific axis patterns"\n'
+    '  "circumplex_summary": "2-3 paragraphs interpreting the circumplex radar chart. '
+    'Each paragraph covers one axis pattern: a clear headline (e.g. Red Spikes vs Blue Shrinks), '
+    'the theoretical grounding (IPC Control-Axis or Affiliation-Axis), '
+    'a captured quote from the conversation, and a verdict-style interpretation. '
+    'Use the spec format: conversational, evidence-driven, no academic jargon."\n'
     "}\n"
     "\n"
-    "Gottman scores follow John Gottman's Four Horsemen (Criticism, Contempt, Defensiveness, Stonewalling).\n"
-    "Circumplex follows the Interpersonal Circumplex model.\n"
-    "IMPORTANT — gottman_explanations: For each horseman where BOTH people score 0, omit that key entirely.\n"
-    "For non-zero scores, write 1-2 evidence-based sentences that:\n"
-    "  1. Explain what this score level means in the context of this specific relationship.\n"
-    "  2. Reference specific patterns or examples from the conversation as evidence.\n"
-    "  3. Use Gottman's research framework (e.g., Criticism attacks character not behavior;\n"
-    "     Contempt includes sarcasm, mockery, hostile humor, eye-rolling;\n"
-    "     Defensiveness is counter-blaming or victim-stance;\n"
-    "     Stonewalling is emotional withdrawal and shutting down).\n"
-    "IMPORTANT — circumplex_summary: Write 2-3 sentences interpreting the interpersonal circumplex patterns.\n"
-    "  Discuss who leads on dominance/warmth/hostility, whether the dynamic is complementary or conflicted,\n"
-    "  and what the overall pattern suggests about the relationship. Reference specific axis values.\n"
+    "=== VISUAL REPORT INTERPRETATION SPEC ===\n"
+    "Gottman scores follow John Gottman's Four Horsemen. Circumplex follows the IPC model.\n"
+    "\n"
+    "CRITICAL — gottman_explanations: For each horseman, produce a structured object with 4 fields:\n"
+    "  1. colloquial_meaning: Plain English, relatable. What does this score actually mean?\n"
+    '     e.g. "Your partner does not respect you as an equal. They tear down your self-worth to fuel their own ego."\n'
+    "  2. captured_quote: Copy-paste the most damning sentence from the conversation verbatim.\n"
+    "  3. verdict: The sharp diagnosis. Call out manipulation, gaslighting, power moves. Use bold, empathetic language.\n"
+    '     e.g. "This is not a regular argument — this is character assassination. Wake up."\n'
+    "  4. counter_strategy: One practical, empowering script the user can say. Short and actionable.\n"
+    "\n"
+    "OMIT a horseman key entirely only if BOTH people score 0 on it.\n"
+    "Order horsemen from HIGHEST combined score to LOWEST.\n"
+    "\n"
+    "Gottman research framework — use these correctly:\n"
+    "  - Criticism: attacks character/personality, not specific behavior. Uses 'you always/never' absolutes.\n"
+    "  - Contempt: #1 predictor of divorce. Includes sarcasm, mockery, hostile humor, eye-rolling, sneering.\n"
+    "  - Defensiveness: counter-blaming, playing victim, refusing accountability. 'I only did X because YOU did Y.'\n"
+    "  - Stonewalling: emotional withdrawal, silent treatment, one-word replies, physically leaving, going ghost.\n"
+    "\n"
+    "CRITICAL — circumplex_summary: Write 2-3 paragraphs, each covering ONE axis pattern:\n"
+    "  Paragraph pattern:\n"
+    "    1. Headline: e.g. 'Red Spikes Outward: Dominance 92% vs Blue Shrinks Inward: Submission 15%'\n"
+    "    2. Theoretical Grounding: IPC Control-Axis Imbalance or IPC Affiliation-Axis Mismatch\n"
+    "    3. Captured Quote: verbatim evidence from the conversation\n"
+    "    4. The Judge's Verdict: interpret what this means for the relationship — sharp, vivid metaphors OK\n"
+    "       (e.g. 'They hijacked the steering wheel', 'emotional black hole vs sunlight personality')\n"
+    "\n"
+    "TONE RULES:\n"
+    "  - NO academic jargon like 'orthogonal vectors', 'cascading emotional disengagement', etc.\n"
+    "  - Use modern, relatable English. Write like a sharp therapist who genuinely cares.\n"
+    "  - Be empathetic toward the victim. Call out the aggressor directly.\n"
+    "  - Use vivid metaphors: 'emotional concrete wall', 'digital abyss', 'panic mode', 'hijacked steering wheel'.\n"
+    "\n"
     "Use English labels for toxic sentences: Emotional Blackmail, Gaslighting, Belittling, "
     "Denial, Blame Shifting, Silent Treatment, Emotional Coercion etc.\n"
     "Counter-suggestions should be practical, empowering phrases in English. All output must be in English.\n"
@@ -159,16 +189,25 @@ def _parse_result(data: dict) -> AnalysisResult:
     cu = data["circumplex"]["user"]
     co = data["circumplex"]["other"]
 
-    # Parse AI-generated explanations
+    # Parse AI-generated explanations (structured HorsemenDetail format)
     ge = data.get("gottman_explanations", {})
     gottman_explanations = None
-    if ge and any(ge.get(k) for k in ['criticism', 'contempt', 'defensiveness', 'stonewalling']):
-        gottman_explanations = GottmanExplanations(
-            criticism=ge.get("criticism"),
-            contempt=ge.get("contempt"),
-            defensiveness=ge.get("defensiveness"),
-            stonewalling=ge.get("stonewalling"),
-        )
+    if ge:
+        details = {}
+        for key in ['criticism', 'contempt', 'defensiveness', 'stonewalling']:
+            item = ge.get(key)
+            if item and isinstance(item, dict):
+                details[key] = HorsemenDetail(
+                    colloquial_meaning=item.get("colloquial_meaning", ""),
+                    captured_quote=item.get("captured_quote", ""),
+                    verdict=item.get("verdict", ""),
+                    counter_strategy=item.get("counter_strategy", ""),
+                )
+            elif item and isinstance(item, str):
+                # Backward-compat: plain string → use as verdict
+                details[key] = HorsemenDetail(verdict=item)
+        if details:
+            gottman_explanations = GottmanExplanations(**details)
 
     return AnalysisResult(
         other_name=data.get("other_name", "Other"),
@@ -216,21 +255,30 @@ def _mock_result() -> AnalysisResult:
                 criticism=68, contempt=55, defensiveness=30, stonewalling=42,
             ),
             explanations=GottmanExplanations(
-                criticism="TA's criticism score (68%) is significantly elevated. "
-                          "In the conversation, TA repeatedly attacked your character rather than addressing specific behaviors — "
-                          "for example, using 'you always' statements that frame personal failings rather than isolated incidents. "
-                          "Your lower score (15%) suggests you mostly avoid this pattern.",
-                contempt="TA's contempt score (55%) is the most concerning finding. "
-                         "Gottman's research identifies contempt as the single strongest predictor of relationship dissolution. "
-                         "TA used sarcasm and dismissive language, signaling a lack of respect. "
-                         "Your score (5%) shows you do not reciprocate this dynamic.",
-                defensiveness="Your defensiveness score (60%) is notable. "
-                              "This is a common response to persistent criticism — when someone feels constantly attacked, "
-                              "they often develop a protective wall of counter-blame or victim-stance. "
-                              "TA also shows some defensiveness (30%), suggesting both parties struggle to hear feedback.",
-                stonewalling="TA's stonewalling (42%) indicates emotional withdrawal during conflict. "
-                             "This may manifest as shutting down, giving short responses, or physically leaving conversations. "
-                             "Your stonewalling (20%) is lower, suggesting you remain more engaged despite the tension.",
+                criticism=HorsemenDetail(
+                    colloquial_meaning="TA attacks who you are, not what you did. Every disagreement becomes a trial of your character.",
+                    captured_quote="You never use your brain. You are just a fundamentally selfish person.",
+                    verdict="This is not feedback — this is identity erosion. Absolute labels like 'you never' and 'you are just a...' are not about solving problems; they hand down a life sentence on who you are as a person.",
+                    counter_strategy="We're talking about one specific event. Don't escalate this into a judgment of my character.",
+                ),
+                contempt=HorsemenDetail(
+                    colloquial_meaning="TA does not respect you as an equal. They mock and belittle you to prop up their own fragile ego.",
+                    captured_quote="Lol, with the tiny salary you make, do you honestly think you could survive without me?",
+                    verdict="This is the most dangerous horseman. Gottman identified contempt as the #1 predictor of relationship failure. TA is systematically eroding your confidence so you feel helpless — someone who loves you would never step on your dignity.",
+                    counter_strategy="My ability to survive is not yours to define. This conversation is over.",
+                ),
+                defensiveness=HorsemenDetail(
+                    colloquial_meaning="TA plays the ultimate Teflon communicator — nothing sticks. They never accept blame, always twist reality to play the victim.",
+                    captured_quote="If you hadn't talked to that person yesterday, I wouldn't have lost my temper. You literally pushed me to do this.",
+                    verdict="Classic gaslighting. TA shifts accountability for their own rage onto you, framing it as 'punishment for your mistake.' If you start apologizing or second-guessing yourself, they win.",
+                    counter_strategy="Take responsibility for your own emotions. Don't blame your lack of self-control on my actions.",
+                ),
+                stonewalling=HorsemenDetail(
+                    colloquial_meaning="TA uses the silent treatment as a weapon — disappearing to punish you and force you to beg for forgiveness.",
+                    captured_quote="Ok. / Whatever, think what you want. (then goes silent for hours)",
+                    verdict="This is a cruel power move designed to manufacture abandonment anxiety. By cutting off the emotional oxygen, they trick your brain into panic mode, forcing you to compromise your boundaries just to get a response.",
+                    counter_strategy="Stop typing. Close the app. Your energy does not belong in an empty digital abyss.",
+                ),
             ),
         ),
         circumplex=CircumplexData(

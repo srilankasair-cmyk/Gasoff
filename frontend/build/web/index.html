@@ -32,7 +32,7 @@
     .loader-text { margin-top: 12px; font-size: 14px; color: #1a1a1a; font-weight: 600; }
 
     /* ── Page Container ── */
-    .container { max-width: 420px; margin: 0 auto; padding: 0 20px 24px; display: none; }
+    .container { max-width: 420px; margin: 0 auto; padding: 0 10px 24px; display: none; }
     .container.show { display: block; }
 
     /* ── Top/Bottom spacers ── */
@@ -93,13 +93,13 @@
       padding: 3px 12px; border-radius: 99px;
       background: rgba(0,0,0,0.12);
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 600; line-height: 18px;
+      font-size: 16px; font-weight: 600; line-height: 22px;
       color: #2a2a1a;
       width: fit-content;
     }
     .score-explanation {
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 400; line-height: 20px;
+      font-size: 16px; font-weight: 400; line-height: 22px;
       letter-spacing: -0.08px; color: #2a2a1a;
     }
 
@@ -116,7 +116,7 @@
     }
     .section-subtitle {
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 400; line-height: 20px;
+      font-size: 16px; font-weight: 400; line-height: 22px;
       letter-spacing: -0.08px; color: rgba(255,255,255,0.55);
     }
 
@@ -170,11 +170,37 @@
       letter-spacing: 0.12px; color: #efefef;
     }
     .horsemen-item .horsemen-explanation {
-      margin-top: 10px; padding-top: 10px;
+      margin-top: 12px; padding-top: 12px;
       border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .horsemen-detail-label {
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 400; line-height: 20px;
-      letter-spacing: -0.08px; color: rgba(255,255,255,0.65);
+      font-size: 12px; font-weight: 700; line-height: 15px;
+      letter-spacing: 0.5px; color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+    }
+    .horsemen-detail-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px; font-weight: 400; line-height: 22px;
+      letter-spacing: -0.08px; color: rgba(255,255,255,0.75);
+    }
+    .horsemen-quote {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px; font-weight: 400; line-height: 22px;
+      font-style: italic; letter-spacing: -0.08px;
+      color: rgba(255,255,255,0.55);
+      padding-left: 12px; border-left: 3px solid rgba(255,255,255,0.2);
+    }
+    .horsemen-verdict {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px; font-weight: 600; line-height: 22px;
+      letter-spacing: -0.08px; color: #ffffff;
+    }
+    .horsemen-counter {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px; font-weight: 500; line-height: 22px;
+      letter-spacing: -0.08px; color: #c9f135;
     }
 
     /* ── Circumplex Card (olive brown) ── */
@@ -185,11 +211,13 @@
     }
     .circumplex-card .section-title { color: #ffffff; }
     .circumplex-summary {
-      margin-top: 4px;
+      margin-top: 8px;
       font-family: 'Inter', sans-serif;
-      font-size: 15px; font-weight: 400; line-height: 22px;
-      letter-spacing: -0.08px; color: rgba(255,255,255,0.75);
+      font-size: 17px; font-weight: 400; line-height: 25px;
+      letter-spacing: -0.08px; color: rgba(255,255,255,0.85);
     }
+    .circumplex-summary p { margin-bottom: 12px; }
+    .circumplex-summary p:last-child { margin-bottom: 0; }
     .circumplex-card {
       background: #887d5f; border-radius: 24px;
       padding: 24px 20px 24px;
@@ -263,7 +291,7 @@
     }
     .toxic-card .toxic-speaker {
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 700; line-height: 18px;
+      font-size: 16px; font-weight: 700; line-height: 22px;
       color: #666666;
     }
     .toxic-card .expand-icon {
@@ -284,7 +312,7 @@
       background: rgba(0,0,0,0.15); border-radius: 20px;
       padding: 18px 20px;
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 400; line-height: 20px;
+      font-size: 16px; font-weight: 400; line-height: 22px;
       color: #1a1a1a;
     }
     .toxic-suggestion {
@@ -312,7 +340,7 @@
     .copy-btn svg { width: 16px; height: 16px; }
     .toxic-suggestion .suggestion-text {
       font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 400; line-height: 20px;
+      font-size: 16px; font-weight: 400; line-height: 22px;
       color: #2a2a1a;
     }
 
@@ -524,7 +552,22 @@
       grid.innerHTML = HORSEMEN.map((key, idx) => {
         const u = Math.round(gottman.user?.[key] || 0);
         const o = Math.round(gottman.other?.[key] || 0);
-        const explanation = expl[key] || '';
+        const detail = expl[key] || null;
+        let detailHTML = '';
+        if (detail) {
+          if (typeof detail === 'string') {
+            // Backward-compat: plain string explanation
+            detailHTML = `<div class="horsemen-explanation"><div class="horsemen-detail-text">${detail}</div></div>`;
+          } else {
+            // New structured format: colloquial_meaning, captured_quote, verdict, counter_strategy
+            detailHTML = `<div class="horsemen-explanation">
+              ${detail.colloquial_meaning ? `<div class="horsemen-detail-label">What this means</div><div class="horsemen-detail-text">${detail.colloquial_meaning}</div>` : ''}
+              ${detail.captured_quote ? `<div class="horsemen-detail-label">Captured evidence</div><div class="horsemen-quote">💬 ${detail.captured_quote}</div>` : ''}
+              ${detail.verdict ? `<div class="horsemen-detail-label">The verdict</div><div class="horsemen-verdict">${detail.verdict}</div>` : ''}
+              ${detail.counter_strategy ? `<div class="horsemen-detail-label">Counter-strategy</div><div class="horsemen-counter">💡 ${detail.counter_strategy}</div>` : ''}
+            </div>`;
+          }
+        }
         return `<div class="horsemen-item" data-horsemen-idx="${idx}">
           <div class="name-row"><span class="name">${HORSEMEN_LABELS[key]}</span></div>
           <div class="bars-section">
@@ -537,7 +580,7 @@
               <div class="bar-label-row"><span class="bar-label">${otherName}</span><span class="bar-score" data-target="${o}">0%</span></div>
             </div>
           </div>
-          ${explanation ? `<div class="horsemen-explanation">${explanation}</div>` : ''}
+          ${detailHTML}
         </div>`;
       }).join('');
 
@@ -699,7 +742,13 @@
     function renderCircumplexSummary(data) {
       const summaryEl = document.getElementById('circumplexSummary');
       if (!summaryEl) return;
-      summaryEl.textContent = data.circumplex_summary || '';
+      const text = data.circumplex_summary || '';
+      // Convert double-newline separated paragraphs to <p> tags
+      summaryEl.innerHTML = text
+        .split(/\n\n+/)
+        .filter(p => p.trim())
+        .map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`)
+        .join('');
     }
 
     // ── Toxic Sentences ──
