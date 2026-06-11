@@ -129,11 +129,26 @@
     .horsemen-item.anim-slide { animation: slideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
     .horsemen-item .name-row {
       display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer;
     }
     .horsemen-item .name {
       font-family: 'Inter', sans-serif;
       font-size: 18px; font-weight: 800; line-height: 22px;
       letter-spacing: -0.23px; color: #ffffff;
+    }
+    .horsemen-item .expand-icon {
+      width: 24px; height: 24px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+    .horsemen-item.expanded .expand-icon { transform: rotate(180deg); }
+    .horsemen-item .horsemen-expand-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .horsemen-item.expanded .horsemen-expand-body {
+      max-height: 800px;
     }
     .horsemen-item .bars-section {
       margin-top: 12px; display: flex; gap: 6px;
@@ -568,8 +583,13 @@
             </div>`;
           }
         }
+        const hasDetail = !!detail && (typeof detail === 'string' || detail.colloquial_meaning || detail.captured_quote || detail.verdict || detail.counter_strategy);
+        const chevronSVG = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         return `<div class="horsemen-item" data-horsemen-idx="${idx}">
-          <div class="name-row"><span class="name">${HORSEMEN_LABELS[key]}</span></div>
+          <div class="name-row" ${hasDetail ? `onclick="this.parentElement.classList.toggle('expanded')"` : ''}>
+            <span class="name">${HORSEMEN_LABELS[key]}</span>
+            ${hasDetail ? `<span class="expand-icon">${chevronSVG}</span>` : ''}
+          </div>
           <div class="bars-section">
             <div class="bar-column">
               <div class="bar-track-wrap"><div class="bar-fill user" data-target="${u}"></div></div>
@@ -580,7 +600,7 @@
               <div class="bar-label-row"><span class="bar-label">${otherName}</span><span class="bar-score" data-target="${o}">0%</span></div>
             </div>
           </div>
-          ${detailHTML}
+          ${hasDetail ? `<div class="horsemen-expand-body">${detailHTML}</div>` : ''}
         </div>`;
       }).join('');
 
@@ -744,10 +764,22 @@
       if (!summaryEl) return;
       const text = data.circumplex_summary || '';
       // Convert double-newline separated paragraphs to <p> tags
+      // Make title lines (ending with colon, on their own) bold
       summaryEl.innerHTML = text
         .split(/\n\n+/)
         .filter(p => p.trim())
-        .map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`)
+        .map(p => {
+          const lines = p.trim().split('\n');
+          const formatted = lines.map(line => {
+            const trimmed = line.trim();
+            // Bold title line: ends with colon and is relatively short (< 80 chars)
+            if (trimmed.endsWith(':') && trimmed.length < 80) {
+              return `<strong>${trimmed}</strong>`;
+            }
+            return trimmed;
+          }).join('<br>');
+          return `<p>${formatted}</p>`;
+        })
         .join('');
     }
 

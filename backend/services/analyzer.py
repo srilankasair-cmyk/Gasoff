@@ -89,10 +89,9 @@ _ANALYSIS_SYSTEM_PROMPT = (
     '    "stonewalling": { ... same structure ... }\n'
     "  },\n"
     '  "circumplex_summary": "2-3 paragraphs interpreting the circumplex radar chart. '
-    'Each paragraph covers one axis pattern: a clear headline (e.g. Red Spikes vs Blue Shrinks), '
-    'the theoretical grounding (IPC Control-Axis or Affiliation-Axis), '
-    'a captured quote from the conversation, and a verdict-style interpretation. '
-    'Use the spec format: conversational, evidence-driven, no academic jargon."\n'
+    'Separate paragraphs with a blank line. Each paragraph MUST start with a bold title line ending with a colon '
+    '(e.g. Power Dynamic: One-Sided Control), then IPC grounding, a captured quote, and a verdict. '
+    'DO NOT use confusing terms like \'red spikes\' or \'blue shrinks\' — use actual names or You/Other."\n'
     "}\n"
     "\n"
     "=== VISUAL REPORT INTERPRETATION SPEC ===\n"
@@ -115,19 +114,18 @@ _ANALYSIS_SYSTEM_PROMPT = (
     "  - Defensiveness: counter-blaming, playing victim, refusing accountability. 'I only did X because YOU did Y.'\n"
     "  - Stonewalling: emotional withdrawal, silent treatment, one-word replies, physically leaving, going ghost.\n"
     "\n"
-    "CRITICAL — circumplex_summary: Write 2-3 paragraphs, each covering ONE axis pattern:\n"
-    "  Paragraph pattern:\n"
-    "    1. Headline: e.g. 'Red Spikes Outward: Dominance 92% vs Blue Shrinks Inward: Submission 15%'\n"
-    "    2. Theoretical Grounding: IPC Control-Axis Imbalance or IPC Affiliation-Axis Mismatch\n"
-    "    3. Captured Quote: verbatim evidence from the conversation\n"
-    "    4. The Judge's Verdict: interpret what this means for the relationship — sharp, vivid metaphors OK\n"
-    "       (e.g. 'They hijacked the steering wheel', 'emotional black hole vs sunlight personality')\n"
+    "CRITICAL — circumplex_summary: Write 2-3 paragraphs, separated by blank lines. Each paragraph:\n"
+    "  MUST start with a bold title line ending with a colon, on its own line.\n"
+    '    Good examples: "Power Dynamic: One-Sided Control", "Emotional Temperature: Warmth Meets a Cold Wall",\n'
+    '    "Relationship Pattern: Complementary but Unequal"\n'
+    "    DO NOT use confusing \'red spikes\' or \'blue shrinks\' — use You/Other person labels instead.\n"
+    "  Then include: IPC grounding, a captured quote, and a verdict-style interpretation.\n"
+    "  Use vivid, relatable metaphors (e.g. 'hijacked the steering wheel', 'emotional black hole').\n"
     "\n"
     "TONE RULES:\n"
     "  - NO academic jargon like 'orthogonal vectors', 'cascading emotional disengagement', etc.\n"
     "  - Use modern, relatable English. Write like a sharp therapist who genuinely cares.\n"
     "  - Be empathetic toward the victim. Call out the aggressor directly.\n"
-    "  - Use vivid metaphors: 'emotional concrete wall', 'digital abyss', 'panic mode', 'hijacked steering wheel'.\n"
     "\n"
     "Use English labels for toxic sentences: Emotional Blackmail, Gaslighting, Belittling, "
     "Denial, Blame Shifting, Silent Treatment, Emotional Coercion etc.\n"
